@@ -1419,10 +1419,10 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             Enabled = _G.Config.CursedWomb.Enabled
         })
 
-    -- THRILLER PARK
+    -- THRILLER BARK
 
         OthersPg.Toggle({
-            Text = "Auto Thriller Park",
+            Text = "Auto Thriller Bark",
             Callback = function(v)
                 _G.Config.ThrillerBark.Enabled = v
                 SaveConfig()
@@ -1556,9 +1556,9 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         StPg.Button({
             Text = "Clear Statistics",
             Callback = function()
-                _G.Config.GemsReceived = 0
-                _G.Config.XpReceived = 0
-                _G.Config.TotalLevels = 0
+                for k, v in pairs(_G.Config.Stats) do
+                    _G.Config.Stats[k] = 0
+                end
                 SaveConfig()
             end
         })
@@ -2076,7 +2076,6 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end
             end
 
-
             local function Join(mode)
                 pcall(function()
                     if mode == "Story" or mode == "Inf" or mode == "Mission" then
@@ -2463,91 +2462,97 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             function NotifyAndTeleport()
                 if game:GetService("Workspace")["_DATA"].GameFinished.Value == true then
                     if _G.Config.Notify["Game Results"] and not NotifySent or _G.Config.SaveStatistics and not SavedStatistics then
-                        task.wait(6)
-                        pcall(function()
-
-                            local timer = game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.Middle.Timer.Text
-                            local leveldata = game:GetService("Workspace")["_MAP_CONFIG"].GetLevelData:InvokeServer()
-                            local Result = {
-                                map = "**Map:** " .. leveldata["_location_name"],
-                                level = "**Level:** " .. leveldata["name"],
-                                gamemode = "**Gamemode:** " .. GetGamemode(leveldata["_gamemode"]),
-                                time = string.match(timer, "%d+") .. "min e " .. string.gsub(string.match(timer, ":%d+"), ":", "") .. "s",
-                                wave = string.match(game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.Middle.WavesCompleted.Text, "%d+"),
-                                gem = game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.LevelRewards.ScrollingFrame.GemReward.Main.Amount.Text,
-                                candy = string.match(game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.LevelRewards.ScrollingFrame.ResourceReward.Main.Amount.Text, "%d+"),
-                                xp = string.match(game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.LevelRewards.ScrollingFrame.XPReward.Main.Amount.Text, "%d+"),
-                                items = table.concat(_G.ObtainedItems, "\n")
-                            }
-
-                            if _G.Config.SaveStatistics and not SavedStatistics then
-                                if tonumber(Result.gem) < 1000 then
-                                    _G.Config.Stats["Gems Received"] += tonumber(Result.gem)
+                        task.wait(1)
+                        if game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Enabled then
+                            pcall(function()
+                                local timer = game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.Middle.Timer.Text
+                                local leveldata = game:GetService("Workspace")["_MAP_CONFIG"].GetLevelData:InvokeServer()
+                                local Result = {
+                                    map = "**Map:** " .. leveldata["_location_name"],
+                                    level = "**Level:** " .. leveldata["name"],
+                                    gamemode = "**Gamemode:** " .. GetGamemode(leveldata["_gamemode"]),
+                                    time = string.match(timer, "%d+") .. "min e " .. string.gsub(string.match(timer, ":%d+"), ":", "") .. "s",
+                                    wave = string.match(game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.Middle.WavesCompleted.Text, "%d+"),
+                                    gem = game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.LevelRewards.ScrollingFrame.GemReward.Main.Amount.Text,
+                                    xp = string.match(game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.LevelRewards.ScrollingFrame.XPReward.Main.Amount.Text, "%d+"),
+                                    items = table.concat(_G.ObtainedItems, "\n")
+                                }
+                                if game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.LevelRewards.ScrollingFrame:FindFirstChild("ResourceReward") then
+                                    Result.candy = string.match(game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.LevelRewards.ScrollingFrame.ResourceReward.Main.Amount.Text, "%d+")
+                                else
+                                    Result.candy = "99999"
                                 end
-                                if tonumber(Result.candy) < 10000 then
-                                    _G.Config.Stats["Candies Received"] += tonumber(Result.candy)
-                                end 
-                                if tonumber(Result.xp) < 1000 then
-                                    _G.Config.Stats["XP Received"] += tonumber(Result.xp)
-                                end 
-                                _G.Config.Stats["Levels Completed"] += 1
-                                SavedStatistics = true
-                                SaveConfig()
-                            end
-                            if tonumber(Result.gem) > 1000 then Result.gem = "Not Calculated" end
-                            if tonumber(Result.candy) > 10000 then Result.candy = "Not Calculated" end
-                            if #_G.ObtainedItems == 0 then Result.items = "None" end
 
-                            local Data = {
-                                ["username"] = "Mazter Notifier",
-                                ["avatar_url"] = "https://i.imgur.com/luWHUeX.png",
-                                ["content"] = "",
-                                ["embeds"] = {{
-                                    ["title"] = "Game Results",
-                                    ["description"] = Result.map.."\n"..Result.level.."\n"..Result.gamemode,
-                                    ["type"] = "rich",
-                                    ["color"] = tonumber(0x000000),
-                                    ["fields"] = {
-                                        {
-                                            ["name"] = "Total Time:",
-                                            ["value"] = Result.time,
-                                            ["inline"] = true
-                                        },
-                                        {
-                                            ["name"] = "Waves Completed:",
-                                            ["value"] = Result.wave,
-                                            ["inline"] = true
-                                        },
-                                        {
-                                            ["name"] = "Gems Received:",
-                                            ["value"] = Result.gem,
-                                            ["inline"] = false
-                                        },
-                                        {
-                                            ["name"] = "Candies Received:",
-                                            ["value"] = Result.candy,
-                                            ["inline"] = true
-                                        },
-                                        {
-                                            ["name"] = "Obtained Items:",
-                                            ["value"] = Result.items,
-                                            ["inline"] = false
+                                if _G.Config.SaveStatistics and not SavedStatistics then
+                                    if tonumber(Result.gem) < 1000 then
+                                        _G.Config.Stats["Gems Received"] += tonumber(Result.gem)
+                                    end
+                                    if tonumber(Result.candy) < 10000 then
+                                        _G.Config.Stats["Candies Received"] += tonumber(Result.candy)
+                                    end 
+                                    if tonumber(Result.xp) < 1000 then
+                                        _G.Config.Stats["XP Received"] += tonumber(Result.xp)
+                                    end 
+                                    _G.Config.Stats["Levels Completed"] += 1
+                                    SavedStatistics = true
+                                    SaveConfig()
+                                end
+                                if tonumber(Result.gem) > 1000 then Result.gem = "Not Calculated" end
+                                if tonumber(Result.candy) > 10000 then Result.candy = "Not Calculated" end
+                                if #_G.ObtainedItems == 0 then Result.items = "None" end
+
+                                local Data = {
+                                    ["username"] = "Mazter Notifier",
+                                    ["avatar_url"] = "https://i.imgur.com/luWHUeX.png",
+                                    ["content"] = "",
+                                    ["embeds"] = {{
+                                        ["title"] = "Game Results",
+                                        ["description"] = Result.map.."\n"..Result.level.."\n"..Result.gamemode,
+                                        ["type"] = "rich",
+                                        ["color"] = tonumber(0x000000),
+                                        ["fields"] = {
+                                            {
+                                                ["name"] = "Total Time:",
+                                                ["value"] = Result.time,
+                                                ["inline"] = true
+                                            },
+                                            {
+                                                ["name"] = "Waves Completed:",
+                                                ["value"] = Result.wave,
+                                                ["inline"] = true
+                                            },
+                                            {
+                                                ["name"] = "Gems Received:",
+                                                ["value"] = Result.gem,
+                                                ["inline"] = false
+                                            },
+                                            {
+                                                ["name"] = "Candies Received:",
+                                                ["value"] = Result.candy,
+                                                ["inline"] = true
+                                            },
+                                            {
+                                                ["name"] = "Obtained Items:",
+                                                ["value"] = Result.items,
+                                                ["inline"] = false
+                                            }
                                         }
-                                    }
-                                }}
-                            }
-                    
-                            if _G.Config.WebhookURL ~= "" and _G.Config.Notify["Game Results"] and not NotifySent then
-                                SendWebhook(Data, _G.Config.Mention)
-                                NotifySent = true
-                            end
-                        end)
-                    else task.wait(1)
+                                    }}
+                                }
+                        
+                                if _G.Config.WebhookURL ~= "" and _G.Config.Notify["Game Results"] and not NotifySent then
+                                    SendWebhook(Data, _G.Config.Mention)
+                                    NotifySent = true
+                                end
+                            end)
+                        end
                     end
-                    _G.Config.IsA = ""
-                    SaveConfig()
-                    task.wait(1)
-                    game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
+                    task.spawn(function()
+                        task.wait(3)
+                        _G.Config.IsA = ""
+                        SaveConfig()
+                        game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
+                    end)
                 end
             end
 
