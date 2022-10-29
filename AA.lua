@@ -4,9 +4,9 @@ game:GetService("Players").LocalPlayer.Idled:connect(function()
     game:GetService("VirtualUser"):ClickButton2(Vector2.new())
 end)
 
-local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/mazterziN/Hub/main/MaterialUI.lua"))()
+local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/MaterialLibrary.lua"))()
 local Data = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/AA.lua"))()
-local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/mazterziN/Hub/main/NotifierUI.lua"))()
+local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Notifier.lua"))()
 
 _G.Config = {
     IsA = "",
@@ -846,9 +846,9 @@ end
 if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Whitelist.lua"))(), game.Players.LocalPlayer.UserId) then
 
     if InLobby() and not game:GetService("CoreGui"):FindFirstChild(hubname) then
-        task.wait(4)
+        task.wait(5)
     elseif InGame() and not game:GetService("CoreGui"):FindFirstChild(hubname) then
-        task.wait(16)
+        task.wait(17)
     end
 
     task.spawn(HideLeaderboard)
@@ -1225,78 +1225,80 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end
             })
         elseif InGame() then
-            if #_G.Config.Collection.Money > 0 and #_G.Config.Collection.All > 0 then
-                InfPg.TextField({
-                    Text = "Search Unit",
-                    Callback = function(v)
-                        for i = 1, 6 do
-                            if i == 1 then
-                                _G.InfUnitDD[i]:SetOptions(Search("unitsid", v, "Money", true))
-                            else
-                                _G.InfUnitDD[i]:SetOptions(Search("unitsid", v, "All", true))
+            pcall(function()
+                if #_G.Config.Collection.Money > 0 and #_G.Config.Collection.All > 0 then
+                    InfPg.TextField({
+                        Text = "Search Unit",
+                        Callback = function(v)
+                            for i = 1, 6 do
+                                if i == 1 then
+                                    _G.InfUnitDD[i]:SetOptions(Search("unitsid", v, "Money", true))
+                                else
+                                    _G.InfUnitDD[i]:SetOptions(Search("unitsid", v, "All", true))
+                                end
                             end
                         end
+                    })
+                    for i = 1, 6 do
+                        if i == 1 then
+                            _G.InfUnitDD[i] = InfPg.Dropdown({
+                                Text = "Unit "..i.." - Empty",
+                                Callback = function(op)
+                                    local unit = string.gsub(op, string.match(op, "-%sLV.%s%d+%s"), "")
+                                    if _G.Config.Inf.Units["u"..i] == unit then
+                                        _G.Config.Inf.Units["u"..i] = ""
+                                    else
+                                        _G.Config.Inf.Units["u"..i] = unit
+                                    end
+                                    SaveConfig()
+                                end,
+                                Options = _G.Config.Collection.Money
+                            })
+                        else
+                            _G.InfUnitDD[i] = InfPg.Dropdown({
+                                Text = "Unit "..i.." - Empty",
+                                Callback = function(op)
+                                    local unit = string.gsub(op, string.match(op, "-%sLV.%s%d+%s"), "")
+                                    if _G.Config.Inf.Units["u"..i] == unit then
+                                        _G.Config.Inf.Units["u"..i] = ""
+                                    else
+                                        _G.Config.Inf.Units["u"..i] = unit
+                                    end
+                                    SaveConfig()
+                                end,
+                                Options = _G.Config.Collection.All
+                            })
+                        end
                     end
-                })
-                for i = 1, 6 do
-                    if i == 1 then
-                        _G.InfUnitDD[i] = InfPg.Dropdown({
-                            Text = "Unit "..i.." - Empty",
-                            Callback = function(op)
-                                local unit = string.gsub(op, string.match(op, "-%sLV.%s%d+%s"), "")
-                                if _G.Config.Inf.Units["u"..i] == unit then
-                                    _G.Config.Inf.Units["u"..i] = ""
-                                else
-                                    _G.Config.Inf.Units["u"..i] = unit
-                                end
-                                SaveConfig()
-                            end,
-                            Options = _G.Config.Collection.Money
-                        })
-                    else
-                        _G.InfUnitDD[i] = InfPg.Dropdown({
-                            Text = "Unit "..i.." - Empty",
-                            Callback = function(op)
-                                local unit = string.gsub(op, string.match(op, "-%sLV.%s%d+%s"), "")
-                                if _G.Config.Inf.Units["u"..i] == unit then
-                                    _G.Config.Inf.Units["u"..i] = ""
-                                else
-                                    _G.Config.Inf.Units["u"..i] = unit
-                                end
-                                SaveConfig()
-                            end,
-                            Options = _G.Config.Collection.All
-                        })
+                    InfPg.Button({
+                        Text = "Clear Units",
+                        Callback = function()
+                            for i = 1, 6 do
+                                _G.Config.Inf.Units["u" .. i] = ""
+                            end
+                            SaveConfig()
+                        end
+                    })
+                    InfPg.Button({
+                        Text = "Copy Story Units",
+                        Callback = function()
+                            for i = 1, 6 do
+                                _G.Config.Inf.Units["u"..i] = _G.Config.Story.Units["u"..i]
+                            end
+                            SaveConfig()
+                        end
+                    })
+                else
+                    for i = 1, 6 do
+                        if _G.Config.Inf.Units["u"..i] ~= "" then
+                            local unit = string.split(_G.Config.Inf.Units["u"..i], " ")[1]
+                            InfPg.Label({
+                                Text = i.." - "..unit
+                            })
+                        end
                     end
                 end
-                InfPg.Button({
-                    Text = "Clear Units",
-                    Callback = function()
-                        for i = 1, 6 do
-                            _G.Config.Inf.Units["u" .. i] = ""
-                        end
-                        SaveConfig()
-                    end
-                })
-                InfPg.Button({
-                    Text = "Copy Story Units",
-                    Callback = function()
-                        for i = 1, 6 do
-                            _G.Config.Inf.Units["u"..i] = _G.Config.Story.Units["u"..i]
-                        end
-                        SaveConfig()
-                    end
-                })
-            else
-                for i = 1, 6 do
-                    if _G.Config.Inf.Units["u"..i] ~= "" then
-                        local unit = string.split(_G.Config.Inf.Units["u"..i], " ")[1]
-                        InfPg.Label({
-                            Text = i.." - "..unit
-                        })
-                    end
-                end
-            end
+            end)
         end
 
     -- RAID
