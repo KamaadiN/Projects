@@ -391,7 +391,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
 
     -- GUI
 
-        local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/mazterziN/Hub/main/MaterialUI.lua"))()
+        local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/MaterialLibrary.lua"))()
         local UI = Material.Load({
             Title = hubname,
             Style = 1,
@@ -1019,6 +1019,6 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         end)
 
 else
-    local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/mazterziN/Hub/main/NotifierUI.lua"))()
+    local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Notifier.lua"))()
     Notify.new("ERROR", "MAZTER HUB", "You are not whitelisted.", true, 10)
 end
