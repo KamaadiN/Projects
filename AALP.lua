@@ -34,7 +34,7 @@ if game.PlaceId == 8349889591 then
     end
 
     -- GUI
-        local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/mazterziN/Hub/main/MaterialUI.lua"))()
+        local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/MaterialLibrary.lua"))()
         local UI = Material.Load({
             Title = " MAZTER HUB - Anime Adventures",
             Style = 1,
@@ -176,12 +176,6 @@ if game.PlaceId == 8349889591 then
             Text = "Return to Lobby",
             Callback = function()
                 game:GetService("TeleportService"):Teleport(8304191830, game.Players.LocalPlayer)
-            end
-        })
-        MiscPg.Button({
-            Text = "Return to Mazter Hub",
-            Callback = function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/mazterziN/Hub/main/Loader.lua"))()
             end
         })
         MiscPg.Button({
