@@ -101,9 +101,12 @@ _G.Config = {
     },
 
     SaveStatistics = false,
-    GemsReceived = 0,
-    XpReceived = 0,
-    TotalLevels = 0,
+    Stats = {
+        ["Gems Received"] = 0,
+        ["XP Received"] = 0,
+        ["Candies Received"] = 0,
+        ["Levels Completed"] = 0
+    },
 
     AutoSummon = false,
     Summoning = false,
@@ -123,7 +126,7 @@ _G.Config = {
     SilentExec = false,
     Keybind = "Enum.KeyCode.RightAlt",
     
-    ConfigChanges = 1.8
+    ConfigChanges = 1.7777
 }
 
 local hubname = " MAZTER HUB - Anime Adventures"
@@ -1559,15 +1562,13 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 SaveConfig()
             end
         })
-        local GemsLabel = StPg.Label({
-            Text = "Received Gems: " .. _G.Config.GemsReceived
-        })
-        local XpLabel = StPg.Label({
-            Text = "Received XP: " .. _G.Config.XpReceived
-        })
-        local LevelsLabel = StPg.Label({
-            Text = "Levels Completed: " .. _G.Config.TotalLevels
-        })
+
+        local Labels = {}
+        for k, v in pairs(_G.Config.Stats) do
+            Labels[k] = StPg.Label({
+                Text = k .. ": " .. _G.Config.Stats[k]
+            })
+        end
 
     -- MISC
 
@@ -1594,7 +1595,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             MiscPg.Button({
                 Text = "Legit Panel",
                 Callback = function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/mazterziN/Hub/main/Scripts/AnimeAdventures/LegitPanel.lua"))()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/Projects/main/AALP.lua"))()
                 end
             })
         end
@@ -2467,30 +2468,35 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
 
                             local timer = game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.Middle.Timer.Text
                             local leveldata = game:GetService("Workspace")["_MAP_CONFIG"].GetLevelData:InvokeServer()
-                            local ResultData = {
+                            local Result = {
                                 map = "**Map:** " .. leveldata["_location_name"],
                                 level = "**Level:** " .. leveldata["name"],
                                 gamemode = "**Gamemode:** " .. GetGamemode(leveldata["_gamemode"]),
                                 time = string.match(timer, "%d+") .. "min e " .. string.gsub(string.match(timer, ":%d+"), ":", "") .. "s",
                                 wave = string.match(game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.Middle.WavesCompleted.Text, "%d+"),
-                                gem = game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.GoldGemXP.GemReward.Main.Amount.Text,
-                                xp = string.match(game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.GoldGemXP.XPReward.Main.Amount.Text, "%d+"),
+                                gem = game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.LevelRewards.ScrollingFrame.GemReward.Main.Amount.Text,
+                                candy = string.match(game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.LevelRewards.ScrollingFrame.ResourceReward.Main.Amount.Text, "%d+"),
+                                xp = string.match(game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.LevelRewards.ScrollingFrame.XPReward.Main.Amount.Text, "%d+"),
                                 items = table.concat(_G.ObtainedItems, "\n")
                             }
 
                             if _G.Config.SaveStatistics and not SavedStatistics then
-                                if tonumber(ResultData.gem) < 1000 then
-                                    _G.Config.GemsReceived += tonumber(ResultData.gem)
+                                if tonumber(Result.gem) < 1000 then
+                                    _G.Config.Stats["Gems Received"] += tonumber(Result.gem)
                                 end
-                                if tonumber(ResultData.xp) < 1000 then
-                                    _G.Config.XpReceived += tonumber(ResultData.xp)
+                                if tonumber(Result.candy) < 10000 then
+                                    _G.Config.Stats["Candies Received"] += tonumber(Result.candy)
                                 end 
-                                _G.Config.TotalLevels += 1
+                                if tonumber(Result.xp) < 1000 then
+                                    _G.Config.Stats["XP Received"] += tonumber(Result.xp)
+                                end 
+                                _G.Config.Stats["Levels Completed"] += 1
                                 SavedStatistics = true
                                 SaveConfig()
                             end
-                            if tonumber(ResultData.gem) > 1000 then ResultData.gem = "Not Calculated" end
-                            if #_G.ObtainedItems == 0 then ResultData.items = "None" end
+                            if tonumber(Result.gem) > 1000 then Result.gem = "Not Calculated" end
+                            if tonumber(Result.candy) > 10000 then Result.candy = "Not Calculated" end
+                            if #_G.ObtainedItems == 0 then Result.items = "None" end
 
                             local Data = {
                                 ["username"] = "Mazter Notifier",
@@ -2498,28 +2504,33 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                                 ["content"] = "",
                                 ["embeds"] = {{
                                     ["title"] = "Game Results",
-                                    ["description"] = ResultData.map.."\n"..ResultData.level.."\n"..ResultData.gamemode,
+                                    ["description"] = Result.map.."\n"..Result.level.."\n"..Result.gamemode,
                                     ["type"] = "rich",
                                     ["color"] = tonumber(0x000000),
                                     ["fields"] = {
                                         {
                                             ["name"] = "Total Time:",
-                                            ["value"] = ResultData.time,
+                                            ["value"] = Result.time,
                                             ["inline"] = true
                                         },
                                         {
-                                            ["name"] = "Completed Waves:",
-                                            ["value"] = ResultData.wave,
+                                            ["name"] = "Waves Completed:",
+                                            ["value"] = Result.wave,
                                             ["inline"] = true
                                         },
                                         {
-                                            ["name"] = "Received Gems:",
-                                            ["value"] = ResultData.gem,
+                                            ["name"] = "Gems Received:",
+                                            ["value"] = Result.gem,
+                                            ["inline"] = false
+                                        },
+                                        {
+                                            ["name"] = "Candies Received:",
+                                            ["value"] = Result.candy,
                                             ["inline"] = true
                                         },
                                         {
                                             ["name"] = "Obtained Items:",
-                                            ["value"] = ResultData.items,
+                                            ["value"] = Result.items,
                                             ["inline"] = false
                                         }
                                     }
@@ -2700,9 +2711,9 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 _G.HubKeyBTN:SetText("Keybind: " .. key) else _G.HubKeyBTN:SetText("Keybind: ...")
             end
 
-            GemsLabel.SetText("Received Gems: " .. _G.Config.GemsReceived)
-            XpLabel.SetText("Received XP: " .. _G.Config.XpReceived)
-            LevelsLabel.SetText("Levels Completed: " .. _G.Config.TotalLevels)
+            for k, v in pairs(_G.Config.Stats) do
+                Labels[k].SetText(k .. ": ".. _G.Config.Stats[k])
+            end
         end)
         game:GetService("UserInputService").InputBegan:connect(function(input, processed)
             if input.UserInputType == Enum.UserInputType.Keyboard and _G.SelectingHubKey then
