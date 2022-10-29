@@ -1225,80 +1225,78 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end
             })
         elseif InGame() then
-            pcall(function()
-                if #_G.Config.Collection.Money > 0 and #_G.Config.Collection.All > 0 then
-                    InfPg.TextField({
-                        Text = "Search Unit",
-                        Callback = function(v)
-                            for i = 1, 6 do
-                                if i == 1 then
-                                    _G.InfUnitDD[i]:SetOptions(Search("unitsid", v, "Money", true))
-                                else
-                                    _G.InfUnitDD[i]:SetOptions(Search("unitsid", v, "All", true))
-                                end
+            if #_G.Config.Collection.Money > 0 and #_G.Config.Collection.All > 0 then
+                InfPg.TextField({
+                    Text = "Search Unit",
+                    Callback = function(v)
+                        for i = 1, 6 do
+                            if i == 1 then
+                                _G.InfUnitDD[i]:SetOptions(Search("unitsid", v, "Money", true))
+                            else
+                                _G.InfUnitDD[i]:SetOptions(Search("unitsid", v, "All", true))
                             end
-                        end
-                    })
-                    for i = 1, 6 do
-                        if i == 1 then
-                            _G.InfUnitDD[i] = InfPg.Dropdown({
-                                Text = "Unit "..i.." - Empty",
-                                Callback = function(op)
-                                    local unit = string.gsub(op, string.match(op, "-%sLV.%s%d+%s"), "")
-                                    if _G.Config.Inf.Units["u"..i] == unit then
-                                        _G.Config.Inf.Units["u"..i] = ""
-                                    else
-                                        _G.Config.Inf.Units["u"..i] = unit
-                                    end
-                                    SaveConfig()
-                                end,
-                                Options = _G.Config.Collection.Money
-                            })
-                        else
-                            _G.InfUnitDD[i] = InfPg.Dropdown({
-                                Text = "Unit "..i.." - Empty",
-                                Callback = function(op)
-                                    local unit = string.gsub(op, string.match(op, "-%sLV.%s%d+%s"), "")
-                                    if _G.Config.Inf.Units["u"..i] == unit then
-                                        _G.Config.Inf.Units["u"..i] = ""
-                                    else
-                                        _G.Config.Inf.Units["u"..i] = unit
-                                    end
-                                    SaveConfig()
-                                end,
-                                Options = _G.Config.Collection.All
-                            })
                         end
                     end
-                    InfPg.Button({
-                        Text = "Clear Units",
-                        Callback = function()
-                            for i = 1, 6 do
-                                _G.Config.Inf.Units["u" .. i] = ""
-                            end
-                            SaveConfig()
-                        end
-                    })
-                    InfPg.Button({
-                        Text = "Copy Story Units",
-                        Callback = function()
-                            for i = 1, 6 do
-                                _G.Config.Inf.Units["u"..i] = _G.Config.Story.Units["u"..i]
-                            end
-                            SaveConfig()
-                        end
-                    })
-                else
-                    for i = 1, 6 do
-                        if _G.Config.Inf.Units["u"..i] ~= "" then
-                            local unit = string.split(_G.Config.Inf.Units["u"..i], " ")[1]
-                            InfPg.Label({
-                                Text = i.." - "..unit
-                            })
-                        end
+                })
+                for i = 1, 6 do
+                    if i == 1 then
+                        _G.InfUnitDD[i] = InfPg.Dropdown({
+                            Text = "Unit "..i.." - Empty",
+                            Callback = function(op)
+                                local unit = string.gsub(op, string.match(op, "-%sLV.%s%d+%s"), "")
+                                if _G.Config.Inf.Units["u"..i] == unit then
+                                    _G.Config.Inf.Units["u"..i] = ""
+                                else
+                                    _G.Config.Inf.Units["u"..i] = unit
+                                end
+                                SaveConfig()
+                            end,
+                            Options = _G.Config.Collection.Money
+                        })
+                    else
+                        _G.InfUnitDD[i] = InfPg.Dropdown({
+                            Text = "Unit "..i.." - Empty",
+                            Callback = function(op)
+                                local unit = string.gsub(op, string.match(op, "-%sLV.%s%d+%s"), "")
+                                if _G.Config.Inf.Units["u"..i] == unit then
+                                    _G.Config.Inf.Units["u"..i] = ""
+                                else
+                                    _G.Config.Inf.Units["u"..i] = unit
+                                end
+                                SaveConfig()
+                            end,
+                            Options = _G.Config.Collection.All
+                        })
                     end
                 end
-            end)
+                InfPg.Button({
+                    Text = "Clear Units",
+                    Callback = function()
+                        for i = 1, 6 do
+                            _G.Config.Inf.Units["u" .. i] = ""
+                        end
+                        SaveConfig()
+                    end
+                })
+                InfPg.Button({
+                    Text = "Copy Story Units",
+                    Callback = function()
+                        for i = 1, 6 do
+                            _G.Config.Inf.Units["u"..i] = _G.Config.Story.Units["u"..i]
+                        end
+                        SaveConfig()
+                    end
+                })
+            else
+                for i = 1, 6 do
+                    if _G.Config.Inf.Units["u"..i] ~= "" then
+                        local unit = string.split(_G.Config.Inf.Units["u"..i], " ")[1]
+                        InfPg.Label({
+                            Text = i.." - "..unit
+                        })
+                    end
+                end
+            end
         end
 
     -- RAID
@@ -2609,14 +2607,16 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end
             end
             if InGame() and _G.StoryUnitDD then
-                for i = 1, 6 do
-                    local unit = string.split(_G.Config.Story.Units["u"..i], " ")[1]
-                    if _G.Config.Story.Units["u"..i] ~= "" then
-                        _G.StoryUnitDD[i]:SetText(i.." - ".. unit)
-                    else
-                        _G.StoryUnitDD[i]:SetText(i.." - Empty")
+                pcall(function()
+                    for i = 1, 6 do
+                        local unit = string.split(_G.Config.Story.Units["u"..i], " ")[1]
+                        if _G.Config.Story.Units["u"..i] ~= "" then
+                            _G.StoryUnitDD[i]:SetText(i.." - ".. unit)
+                        else
+                            _G.StoryUnitDD[i]:SetText(i.." - Empty")
+                        end
                     end
-                end
+                end)
             end
             _G.StoryMapDD:SetText("Map Selected: " .. GetMap("name", _G.Config.Story.Map))
             _G.LevelsDD:SetText("Level Selected: " .. GetLevel("name", _G.Config.Story.Level))
@@ -2633,14 +2633,16 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end
             end
             if InGame() and _G.InfUnitDD then
-                for i = 1, 6 do
-                    local unit = string.split(_G.Config.Inf.Units["u"..i], " ")[1]
-                    if _G.Config.Inf.Units["u"..i] ~= "" then
-                        _G.InfUnitDD[i]:SetText(i.." - ".. unit)
-                    else
-                        _G.InfUnitDD[i]:SetText(i.." - Empty")
+                pcall(function()
+                    for i = 1, 6 do
+                        local unit = string.split(_G.Config.Inf.Units["u"..i], " ")[1]
+                        if _G.Config.Inf.Units["u"..i] ~= "" then
+                            _G.InfUnitDD[i]:SetText(i.." - ".. unit)
+                        else
+                            _G.InfUnitDD[i]:SetText(i.." - Empty")
+                        end
                     end
-                end
+                end)
             end
             MapDD:SetText("Map Selected: " .. GetMap("name", _G.Config.Inf.Map))
 
