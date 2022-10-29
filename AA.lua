@@ -1541,6 +1541,13 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                     GuiService.travelling_merchant_ui:toggle()
                 end
             })
+            _G.UiPg.Button({
+                Text = "Event Shop",
+                Callback = function()
+                    local GuiService = require(game.ReplicatedStorage.src.Loader).load_client_service(script, "GUIService")
+                    GuiService.event_shop:toggle()
+                end
+            })
         end
 
     -- STATISTICS
