@@ -6,6 +6,8 @@ end)
 
 if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Whitelist.lua"))(), game.Players.LocalPlayer.UserId) and game.PlaceId == 10723695195 then
 
+    task.wait(5)
+
     _G.Config = {
 
         Farm = {
@@ -249,7 +251,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             end
             for i = 1, AreasCount do
                 for name, v in pairs(areas) do
-                    if v["Id"] == i and not table.find(blockedids, v["Id"]) then
+                    if v["Id"] == i and not v["NoBuy"] and not string.match(name, "Defense") and not string.match(name, "Dungeon") then
                         table.insert(t, name)
                     end
                 end
@@ -316,40 +318,15 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             end
         end
     end
-    local function GetDefense(option, option2)
-        local t = {}
-        local defenses = {
-            Defense = "Defense 1",
-            Defense2 = "Defense 2",
-            Defense_3 = "Defense 3"
-        }
-        if option == "allid" then
-            for k, v in pairs(defenses) do
-                table.insert(t, k)
-            end
-        elseif option == "allnames" then
-            for k, v in pairs(defenses) do
-                table.insert(t, v)
-            end
-        elseif option == "id" then
-            for k, v in pairs(defenses) do
-                if v == option2 then
-                    return k
-                end
-            end
-        elseif option == "name" then
-            for k, v in pairs(defenses) do
-                if k == option2 then
-                    return v
-                end
+    local function GetDefenses()
+        local areas = require(game:GetService("ReplicatedStorage").Modules.Areas)
+        local defenses = {}
+        for i, v in pairs(areas) do
+            if string.match(i, "Defense") then
+                table.insert(defenses, i)
             end
         end
-        table.sort(t, function(a, b)
-            local v1 = tonumber(string.match(a, "%d+"))
-            local v2 = tonumber(string.match(b, "%d+"))
-            return v1 < v2
-        end)
-        return t
+        return defenses
     end
     local function GetPowerArea(option)
         if option == "all" then
@@ -360,6 +337,11 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                     table.insert(t, string.sub(v["W-1"].Gui.Title.Text, i, j))
                 end
             end
+            table.sort(t, function(a, b)
+                local v1 = tonumber(string.match(a, "%d+"))
+                local v2 = tonumber(string.match(b, "%d+"))
+                return v1 < v2
+            end)
             return t
         else
             for i, v in pairs(game:GetService("Workspace")["__WORKSPACE"].Useless:GetChildren()) do
@@ -378,8 +360,6 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             end
         end
     end
-
-    task.wait(5)
 
     OldNameCall = hookmetamethod(game, "__namecall", function(Self, ...)
         local NameCallMethod = getnamecallmethod()
@@ -426,6 +406,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 Text = "Area",
                 Callback = function(v)
                     _G.Config.Farm.Area = v
+                    _G.Config.Farm.Enemy = ""
                     _G.EnemiesDD:SetOptions(GetFighters("mobs", v))
                     SaveConfig()
                 end,
@@ -450,10 +431,10 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             _G.DefenseDD = MainPg.Dropdown({
                 Text = "Select Defense",
                 Callback = function(v)
-                    _G.Config.Defense.ID = GetDefense("id", v)
+                    _G.Config.Defense.ID = v
                     SaveConfig()
                 end,
-                Options = GetDefense("allnames")
+                Options = GetDefenses()
             })
             MainPg.Toggle({
                 Text = "Auto Power Area",
@@ -952,7 +933,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             _G.AreasDD:SetText("Area Selected: ".. _G.Config.Farm.Area)
             _G.EnemiesDD:SetText("Enemy Selected: ".. _G.Config.Farm.Enemy)
 
-            _G.DefenseDD:SetText("Defense Selected: ".. GetDefense("name", _G.Config.Defense.ID))
+            _G.DefenseDD:SetText("Defense Selected: ".. _G.Config.Defense.ID)
 
             _G.PowerAreaDD:SetText("Power Area Selected: ".. _G.Config.PowerArea.Multiplier)
 
@@ -1020,5 +1001,5 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
 
 else
     local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Notifier.lua"))()
-    Notify.new("ERROR", "MAZTER HUB", "You are not whitelisted.", true, 10)
+    Notify.new("ERROR", "MAZTER HUB", "You are not whitelisted.", true, 10) 
 end
