@@ -2431,15 +2431,15 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                     if game:GetService("Workspace")["_wave_num"].Value > 4 then
                         for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                             if tostring(v["_stats"].player.Value) == game.Players.LocalPlayer.Name then
-                                if string.match(v.Name, "erwin") then
+                                if string.match(v["_stats"].id.Value, "erwin") then
                                     if v:FindFirstChild("_stats").upgrade.Value >= 3 and v:FindFirstChild("_buffs")["damage_buff"].Value == 0 then
                                         game:GetService("ReplicatedStorage").endpoints.client_to_server.use_active_attack:InvokeServer(v)
                                     end
-                                elseif string.match(v.Name, "kisuke_evolved") then
+                                elseif string.match(v["_stats"].id.Value, "kisuke_evolved") then
                                     if v:FindFirstChild("_stats").upgrade.Value >= 6 and v:FindFirstChild("_buffs")["attack_cooldown_buff"].Value == 0 and v:FindFirstChild("_buffs")["range_buff"].Value == 0 then
                                         game:GetService("ReplicatedStorage").endpoints.client_to_server.use_active_attack:InvokeServer(v)
                                     end
-                                elseif string.match(v.Name, "gojo_evolved") then
+                                elseif string.match(v["_stats"].id.Value, "gojo_evolved") then
                                     game:GetService("ReplicatedStorage").endpoints.client_to_server.use_active_attack:InvokeServer(v)
                                 end
                             end
@@ -2469,7 +2469,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             function NotifyAndTeleport()
                 if game:GetService("Workspace")["_DATA"].GameFinished.Value == true then
                     if _G.Config.Notify["Game Results"] and not NotifySent or _G.Config.SaveStatistics and not SavedStatistics then
-                        task.wait(1)
+                        task.wait(5)
                         if game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Enabled then
                             pcall(function()
                                 local timer = game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.Middle.Timer.Text
@@ -2555,7 +2555,6 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                         end
                     end
                     task.spawn(function()
-                        task.wait(3)
                         _G.Config.IsA = ""
                         SaveConfig()
                         game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
