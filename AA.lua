@@ -4,8 +4,65 @@ game:GetService("Players").LocalPlayer.Idled:connect(function()
     game:GetService("VirtualUser"):ClickButton2(Vector2.new())
 end)
 
+function DataStore()
+    local DS = {}
+
+    function DS.GetAllMaps()
+        return {
+            {jjk = "Cursed Academy"},
+            {magnolia = "Magic Town"},
+            {hxhant = "Ant Kingdom"},
+            {hueco = "Hollow World"},
+            {tokyoghoul = "Ghoul City"},
+            {marineford = "Marine's Ford"},
+            {naruto = "Hidden Sand Village"},
+            {demonslayer = "Snowy Town"},
+            {aot = "Shiganshinu District"},
+            {namek = "Planet Namak"}
+        }   
+    end
+    function DS.GetRaids()
+        return {
+            {west_city_raid = "West City"},
+            {demonslayer_raid = "Infinity Train"},
+            {naruto_raid = "Hidden Sand Village"},
+            {aot_raid = "Shiganshinu District"}
+        }
+    end
+    function DS.GetTeleports()
+        return {
+            {["Play"] = game:GetService("Workspace")["_teleports"].play.CFrame},
+            {["Dungeons"] = game:GetService("Workspace")["_LOBBIES"]["story build"].Teleporter.beamholder.CFrame + Vector3.new(0,2,0)},
+            {["Summon"] = game:GetService("Workspace")["_teleports"].summon.CFrame},
+            {["Challenge"] = game:GetService("Workspace")["_CHALLENGES"].shell.floor.CFrame},
+            {["Raid"] = game:GetService("Workspace")["_RAID"].shell.floor.CFrame},
+            {["Leaderboards"] = game:GetService("Workspace")["_LEADERBOARDS_"].shell.floor.CFrame},
+            {["Gojo Domain"] = game:GetService("Workspace")["_gojodomain"].entrance.CFrame},
+            {["Infinity Castle"] = game:GetService("Workspace")["_infinity_castle"].entrance.CFrame},
+            {["Sukuna Domain"] = game:GetService("Workspace")["_sukunadomain"].entrance.CFrame}
+        }
+    end
+
+    function DS.Codes()
+        return {
+            "HALLOWEEN",
+            "CURSE2",
+            "CURSE",
+            "subtomaokuma",
+            "TOADBOIGAMING",
+            "SubToKelvingts",
+            "SubToBlamspot",
+            "FictioNTheFirst",
+            "KingLuffy",
+            "noclypso"
+        }
+    end
+
+    return DS;
+end
+
 local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/MaterialLibrary.lua"))()
-local Data = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/AA.lua"))()
+local Data = DataStore()
 local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Notifier.lua"))()
 
 _G.Config = {
@@ -28,17 +85,26 @@ _G.Config = {
         },
         SpawnCap = {
             u1 = 3,
-            u2 = 4,
-            u3 = 4,
-            u4 = 4,
-            u5 = 4,
-            u6 = 4
+            u2 = 6,
+            u3 = 6,
+            u4 = 6,
+            u5 = 6,
+            u6 = 6
+        },
+        UpgradeCap = {
+            u1 = 5,
+            u2 = 5,
+            u3 = 5,
+            u4 = 5,
+            u5 = 5,
+            u6 = 5
         }
     },
     Inf = {
         Enabled = false,
         Map = "namek",
         WaveToLose = 24,
+        UpgradeMode = "Random",
         Units = {
             u1 = "",
             u2 = "",
@@ -84,11 +150,6 @@ _G.Config = {
         Map = "thriller_bark"
     },
 
-    Collection = {
-        Money = {},
-        All = {}
-    },
-
     WebhookURL = "",
     DiscordID = "",
     Mention = true,
@@ -125,8 +186,12 @@ _G.Config = {
 
     SilentExec = false,
     Keybind = "Enum.KeyCode.RightAlt",
-    
-    ConfigChanges = 1.7777
+
+    Collection = {
+        Money = {},
+        All = {}
+    },
+    ConfigChanges = 1.8
 }
 
 local hubname = " MAZTER HUB - Anime Adventures"
@@ -208,6 +273,7 @@ local function LoadConfig()
     end
     _G.StoryUnitDD = {}
     _G.InfUnitDD = {}
+    _G.UpgCapSD = {}
     _G.Config.Raid.Lobby = ""
     _G.Config.Chg.Lobby = ""
     _G.Config.Summoning = true
@@ -595,17 +661,16 @@ end
 local function GetMaxSpawn(Unit)
     local max = {
         u1 = 3,
-        u2 = 4,
-        u3 = 4,
-        u4 = 4,
-        u5 = 4,
-        u6 = 4
+        u2 = 6,
+        u3 = 6,
+        u4 = 6,
+        u5 = 6,
+        u6 = 6
     }
     return max["u"..Unit]
 end
 local function GetSpawnCap(Unit)
     local Units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
-    if _G.Config.Story.ErwinUntilBuff and Unit == "erwin" then return 3 end
     return Units[Unit]["spawn_cap"]
 end
 local function GetUnit(mode, order)
@@ -613,21 +678,13 @@ local function GetUnit(mode, order)
 end
 local function GetUpgrades(UnitID)
     local Units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
-    local Upgrades = 0
-    for k, v in pairs(Units) do
-        if k == UnitID then
-            for i, v in pairs(v["upgrade"]) do
-                Upgrades += 1
-            end
-        end
-    end
-    return Upgrades
+    return #Units[UnitID]["upgrade"]
 end
 local function IsUpgraded(Unit, Mode)
     local Units = game:GetService("Workspace")["_UNITS"]:GetChildren()
     local UnitID = string.split(_G.Config[Mode].Units[Unit], " ")[1]
     local UnitsUpgraded = 0
-    if _G.Config.Story.ErwinUntilBuff then
+    if _G.Config.Story.ErwinUntilBuff and mode == "Story" then
         if UnitID == "erwin" then
             for i, v in next, Units do
                 if v["_stats"].player.Value == game.Players.LocalPlayer then
@@ -661,7 +718,7 @@ local function IsUpgraded(Unit, Mode)
         end
     end
     if UnitsUpgraded > 0 and UnitsPlaced(UnitID) > 0 then
-        if UnitsUpgraded >= UnitsPlaced(UnitID) then
+        if UnitsUpgraded == UnitsPlaced(UnitID) then
             return true
         else
             return false
@@ -776,25 +833,6 @@ local function HasItem(ItemID, ReturnType, Amount)
         return false
     end
 end
-local function ErwinsUpgraded()
-    if _G.Config.Story.ErwinUntilBuff and _G.Config.IsA ~= "Inf" then
-        local erwins = 0
-        for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
-            if string.match(v.Name, "erwin") then
-                if v:FindFirstChild("_stats").id.Value == "erwin" and v:FindFirstChild("_stats").upgrade.Value > 2 then
-                    erwins += 1
-                end
-            end
-        end
-        if erwins >= 2 then
-            return true
-        else
-            return false
-        end
-    else
-        return false
-    end
-end
 local function SilentExecution()
     if _G.Config.SilentExec then
         while wait() do
@@ -851,7 +889,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
     if InLobby() and not game:GetService("CoreGui"):FindFirstChild(hubname) then
         task.wait(5)
     elseif InGame() and not game:GetService("CoreGui"):FindFirstChild(hubname) then
-        task.wait(17)
+        task.wait(18)
     end
 
     task.spawn(HideLeaderboard)
@@ -1106,6 +1144,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end
             end)
         end
+        StoryPg.Label({Text = "SPAWN CAP"})
         for i = 1, 6 do
             StoryPg.Slider({
                 Text = "[SPAWN CAP] - Unit "..i,
@@ -1136,6 +1175,14 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 SaveConfig()
             end,
             Options = GetMap("all")
+        })
+        local UpgDD = InfPg.Dropdown({
+            Text = "Upgrade Mode",
+            Callback = function(op)
+                _G.Config.Inf.UpgradeMode = op
+                SaveConfig()
+            end,
+            Options = {"Random", "Per Order"}
         })
         InfPg.Slider({
             Text = "Wave To Lose",
@@ -1856,28 +1903,17 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                     game:GetService("ReplicatedStorage").endpoints.client_to_server.buy_random_fighter:InvokeServer("dbz_fighter", _G.Config.SummonWith)
                 end
             end
+            
             local function DailyRewards()
                 if _G.Config.DailyRewards then
                     game:GetService("ReplicatedStorage").endpoints.client_to_server.claim_daily_reward:InvokeServer()
                 end
             end
             local function RedeemQuests()
-                if _G.Config.RedeemQuests then
+                if _G.Config.RedeemQuests or _G.Config.Mission.Enabled or _G.Config.ThrillerBark.Enabled then
                     if game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("QuestsUI") then
                         for i, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.QuestsUI.Main.Main.Main.Content:GetDescendants()) do
                             if v:IsA("Frame") and v.Name ~= "Empty" and v.Parent.Name == "Scroll" then
-                                game:GetService("ReplicatedStorage").endpoints.client_to_server.redeem_quest:InvokeServer(v.Name)
-                            end
-                        end
-                    end
-                end
-            end
-            local function RedeemMissions()
-                if _G.Config.Mission.Enabled then
-                    local scroll = game:GetService("Players").LocalPlayer.PlayerGui.QuestsUI.Main.Main.Main.Content.event.Scroll
-                    if not scroll:FindFirstChild("Empty") then
-                        for _, v in pairs(scroll:GetChildren()) do
-                            if v:IsA("Frame") then
                                 game:GetService("ReplicatedStorage").endpoints.client_to_server.redeem_quest:InvokeServer(v.Name)
                             end
                         end
@@ -2014,6 +2050,13 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                         _G.Config.IsA = "ThrillerBark"
                         CheckedMode = true
                         SaveConfig()
+                        for i, v in pairs(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("MissionUI").Main.Main.Main.Content.main.Scroll:GetChildren()) do
+                            if v:FindFirstChild("event") then
+                                if string.match(v.QuestDescription.Text, "Thriller Park") then
+                                    game:GetService("ReplicatedStorage").endpoints.client_to_server.request_claim_mission:InvokeServer(string.gsub(GetMission("id", v.event.Text), "__quest", ""))
+                                end
+                            end
+                        end
                     elseif _G.Config.CursedWomb.Enabled and HasItem("sukuna_finger", "<", 19) and HasItem("key_jjk_finger", ">", 1) then
                         _G.Config.IsA = "CursedWomb"
                         CheckedMode = true
@@ -2064,6 +2107,8 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                         plrAmount += 1
                     end
                     if plrAmount > 1 then
+                        game:GetService("ReplicatedStorage").endpoints.client_to_server.request_leave_lobby:InvokeServer("_lobbytemplate_event229")
+                        wait()
                         ServerHop(game.PlaceId)
                     end
                 elseif mode == "ThrillerBark" then
@@ -2072,6 +2117,8 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                         plrAmount += 1
                     end
                     if plrAmount > 1 then
+                        game:GetService("ReplicatedStorage").endpoints.client_to_server.request_leave_lobby:InvokeServer("_lobbytemplate_event330")
+                        wait()
                         ServerHop(game.PlaceId)
                     end
                 end
@@ -2250,7 +2297,6 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             spawn(function()
                 while wait() do
                     pcall(function()
-                        CheckSummons()
                         DailyRewards()
                         AcceptQuest()
                     end)
@@ -2260,7 +2306,6 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 while wait() do
                     pcall(function()
                         RedeemQuests()
-                        RedeemMissions()
                     end)
                 end
             end)
@@ -2312,6 +2357,163 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             local CheckedMap = false
             _G.ObtainedItems = {}
 
+            function HasPlaced(Unit)
+                if UnitsPlaced(Unit) == GetSpawnCap(Unit) then
+                    return true
+                else
+                    return false
+                end
+            end
+            function PlaceToLoc(UnitID, Location)
+                game:GetService("ReplicatedStorage").endpoints.client_to_server.spawn_unit:InvokeServer(UnitID, Location)
+            end
+            function UnitCFrames(CFrame, UnitAmount, Queue, OtherMultiplier)
+                local table = {}
+                local multiplier = 0
+                if Queue == "x" then
+                    for i = 1, UnitAmount do
+                        table[i] = CFrame + Vector3.new((0.85 * multiplier), 0, (0.85 * OtherMultiplier))
+                        multiplier = multiplier + 1
+                    end
+                elseif Queue == "z" then
+                    for i = 1, UnitAmount do
+                        table[i] = CFrame + Vector3.new((0.85 * OtherMultiplier), 0, (0.85 * multiplier))
+                        multiplier = multiplier + 1
+                    end
+                elseif Queue == "money" then
+                    for i = 1, UnitAmount do
+                        table[i] = CFrame + Vector3.new(0, (5 * multiplier), 0)
+                        multiplier = multiplier + 1
+                    end
+                end
+                return table
+            end
+            function UnitPos(map, unit, pos)
+                local UnitPos = {
+                    ["thriller_bark"] = {
+                        u1 = UnitCFrames(CFrame.new(-206, 125.16, -649.4), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 0),
+                        u3 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 1),
+                        u4 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 2),
+                        u5 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 3),
+                        u6 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 4)
+                    },
+                    ["jjk"] = {
+                        u1 = UnitCFrames(CFrame.new(378.5, 146, -78.5), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(364, 122, -87), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(364, 122, -87), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(364, 122, -87), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(364, 122, -87), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(364, 122, -87), 6, "z", 4)
+                    },
+                    ["magnolia"] = {
+                        u1 = UnitCFrames(CFrame.new(-598, 22.5, -830.3), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-604, 7, -830), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-604, 7, -830), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-604, 7, -830), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-604, 7, -830), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-604, 7, -830), 6, "z", 4)
+                    },
+                    ["hxhant"] = {
+                        u1 = UnitCFrames(CFrame.new(-166, 23, 2939), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-162, 23, 2953), 6, "x", 0),
+                        u3 = UnitCFrames(CFrame.new(-162, 23, 2953), 6, "x", 1),
+                        u4 = UnitCFrames(CFrame.new(-162, 23, 2953), 6, "x", 2),
+                        u5 = UnitCFrames(CFrame.new(-162, 23, 2953), 6, "x", 3),
+                        u6 = UnitCFrames(CFrame.new(-162, 23, 2953), 6, "x", 4)
+                    },
+                    ["hueco"] = {
+                        u1 = UnitCFrames(CFrame.new(-154, 133, -725.65), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-188, 133, -761), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-188, 133, -761), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-188, 133, -761), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-188, 133, -761), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-188, 133, -761), 6, "z", 4)
+                    },
+                    ["tokyoghoul"] = {
+                        u1 = UnitCFrames(CFrame.new(-3022.8, 58.5, -48.6), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-3000, 58.5, -48), 6, "x", 0),
+                        u3 = UnitCFrames(CFrame.new(-3000, 58.5, -48), 6, "x", 1),
+                        u4 = UnitCFrames(CFrame.new(-3000, 58.5, -48), 6, "x", 2),
+                        u5 = UnitCFrames(CFrame.new(-3000, 58.5, -48), 6, "x", 3),
+                        u6 = UnitCFrames(CFrame.new(-3000, 58.5, -48), 6, "x", 4)
+                    },
+                    ["marineford"] = {
+                        u1 = UnitCFrames(CFrame.new(-2590, 34.5, -37), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-2553, 25.2, -38), 6, "x", 0),
+                        u3 = UnitCFrames(CFrame.new(-2553, 25.2, -38), 6, "x", 1),
+                        u4 = UnitCFrames(CFrame.new(-2553, 25.2, -38), 6, "x", 2),
+                        u5 = UnitCFrames(CFrame.new(-2553, 25.2, -38), 6, "x", 3),
+                        u6 = UnitCFrames(CFrame.new(-2553, 25.2, -38), 6, "x", 4)
+                    },
+                    ["naruto"] = {
+                        u1 = UnitCFrames(CFrame.new(-878.5, 32, 328), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-894, 25.3, 312), 6, "x", 0),
+                        u3 = UnitCFrames(CFrame.new(-894, 25.3, 312), 6, "x", 1),
+                        u4 = UnitCFrames(CFrame.new(-894, 25.3, 312), 6, "x", 2),
+                        u5 = UnitCFrames(CFrame.new(-894, 25.3, 312), 6, "x", 3),
+                        u6 = UnitCFrames(CFrame.new(-894, 25.3, 312), 6, "x", 4)
+                    },
+                    ["demonslayer"] = {
+                        u1 = UnitCFrames(CFrame.new(-2971.5, 42.45, -170.8), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-2870, 34.3, -124), 6, "x", 0),
+                        u3 = UnitCFrames(CFrame.new(-2870, 34.3, -124), 6, "x", 1),
+                        u4 = UnitCFrames(CFrame.new(-2870, 34.3, -124), 6, "x", 2),
+                        u5 = UnitCFrames(CFrame.new(-2870, 34.3, -124), 6, "x", 3),
+                        u6 = UnitCFrames(CFrame.new(-2870, 34.3, -124), 6, "x", 4)
+                    },
+                    ["aot"] = {
+                        u1 = UnitCFrames(CFrame.new(-2981, 42, -692), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-3014, 33.75, -682), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-3014, 33.75, -682), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-3014, 33.75, -682), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-3014, 33.75, -682), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-3014, 33.75, -682), 6, "z", 4)
+                    },
+                    ["namek"] = {
+                        u1 = UnitCFrames(CFrame.new(-2926, 94.4, -750.3), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-2948.5, 91.8, -709.5), 6, "x", 0),
+                        u3 = UnitCFrames(CFrame.new(-2948.5, 91.8, -709.5), 6, "x", 1),
+                        u4 = UnitCFrames(CFrame.new(-2948.5, 91.8, -709.5), 6, "x", 2),
+                        u5 = UnitCFrames(CFrame.new(-2948.5, 91.8, -709.5), 6, "x", 3),
+                        u6 = UnitCFrames(CFrame.new(-2948.5, 91.8, -709.5), 6, "x", 4)
+                    },
+                    ["west_city_raid"] = {
+                        u1 = UnitCFrames(CFrame.new(-2359, 40, -85), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-2359, 19.75, -85.8), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-2359, 19.75, -85.8), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-2359, 19.75, -85.8), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-2359, 19.75, -85.8), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-2359, 19.75, -85.8), 6, "z", 4)
+                    },
+                    ["demonslayer_raid"] = {
+                        u1 = UnitCFrames(CFrame.new(86, -7, 318.8), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(35, -15, 325), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(35, -15, 325), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(35, -15, 325), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(35, -15, 325), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(35, -15, 325), 6, "z", 4)
+                    },
+                    ["naruto_raid"] = {
+                        u1 = UnitCFrames(CFrame.new(-878.5, 32, 328), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-894, 25.3, 312), 6, "x", 0),
+                        u3 = UnitCFrames(CFrame.new(-894, 25.3, 312), 6, "x", 1),
+                        u4 = UnitCFrames(CFrame.new(-894, 25.3, 312), 6, "x", 2),
+                        u5 = UnitCFrames(CFrame.new(-894, 25.3, 312), 6, "x", 3),
+                        u6 = UnitCFrames(CFrame.new(-894, 25.3, 312), 6, "x", 4)
+                    },
+                    ["aot_raid"] = {
+                        u1 = UnitCFrames(CFrame.new(-2981, 42, -692), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-3014, 33.75, -682), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-3014, 33.75, -682), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-3014, 33.75, -682), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-3014, 33.75, -682), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-3014, 33.75, -682), 6, "z", 4)
+                    }
+                }
+                return UnitPos[map][unit][pos]
+            end
+
             function CheckMap(mode)
                 local leveldata = game:GetService("Workspace")["_MAP_CONFIG"].GetLevelData:InvokeServer()
                 local worlds = require(game:GetService("ReplicatedStorage").src.Data.Worlds)
@@ -2325,13 +2527,107 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                     game:GetService("ReplicatedStorage").endpoints.client_to_server.vote_start:InvokeServer()
                 end
             end
-            function AutoUpgrade(mode)
+            function PlaceUnits(option)
+                local wave = game:GetService("Workspace"):WaitForChild("_wave_num").Value
+                if option == "Story" or option == "Raid" or option == "CursedWomb" or option == "Chg" or option == "InfCastle" or option == "Mission" then
+                    if wave < 15 and _G.Config.Story.Units["u1"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u1"], " ")
+                        for i = 1, GetSpawnCap(uID[1]) do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u1", i))
+                        end
+                    end
+                    if wave < 15 and _G.Config.Story.Units["u2"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u2"], " ")
+                        for i = 1, _G.Config.Story.SpawnCap["u2"] do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u2", i))
+                        end
+                    end
+                    if wave < 15 and _G.Config.Story.Units["u3"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u3"], " ")
+                        for i = 1, _G.Config.Story.SpawnCap["u3"] do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u3", i))
+                        end
+                    end
+                    if wave > 6 and _G.Config.Story.Units["u4"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u4"], " ")
+                        for i = 1, _G.Config.Story.SpawnCap["u4"] do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u4", i))
+                        end
+                    end
+                    if wave > 6 and _G.Config.Story.Units["u5"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u5"], " ")
+                        for i = 1, _G.Config.Story.SpawnCap["u5"] do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u5", i))
+                        end
+                    end
+                    if wave > 6 and _G.Config.Story.Units["u6"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u6"], " ")
+                        for i = 1, _G.Config.Story.SpawnCap["u6"] do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u6", i))
+                        end
+                    end
+                elseif option == "Inf" or option == "ThrillerBark" then
+
+                    local UnitID = {
+                        string.split(_G.Config.Inf.Units["u1"], " "),
+                        string.split(_G.Config.Inf.Units["u2"], " "),
+                        string.split(_G.Config.Inf.Units["u3"], " "),
+                        string.split(_G.Config.Inf.Units["u4"], " "),
+                        string.split(_G.Config.Inf.Units["u5"], " "),
+                        string.split(_G.Config.Inf.Units["u6"], " ")
+                    }
+
+                    if wave < _G.Config[option].WaveToLose then
+                        if not HasPlaced(UnitID[1][1]) then
+                            for i = 1, GetSpawnCap(UnitID[1][1]) do
+                                PlaceToLoc(UnitID[1][3], UnitPos(_G.Config[option].Map, "u1", i))
+                            end
+                        end
+                    end
+                    if wave < _G.Config[option].WaveToLose then
+                        if not HasPlaced(UnitID[2][1]) then
+                            for i = 1, GetSpawnCap(UnitID[2][1]) do
+                                PlaceToLoc(UnitID[2][3], UnitPos(_G.Config[option].Map, "u2", i))
+                            end
+                        end
+                    end
+                    if wave < _G.Config[option].WaveToLose then
+                        if not HasPlaced(UnitID[3][1]) and HasPlaced(UnitID[2][1]) then
+                            for i = 1, GetSpawnCap(UnitID[3][1]) do
+                                PlaceToLoc(UnitID[3][3], UnitPos(_G.Config[option].Map, "u3", i))
+                            end
+                        end
+                    end
+                    if wave > 6 and wave < _G.Config[option].WaveToLose then
+                        if not HasPlaced(UnitID[4][1]) and HasPlaced(UnitID[3][1]) then
+                            for i = 1, GetSpawnCap(UnitID[4][1]) do
+                                PlaceToLoc(UnitID[4][3], UnitPos(_G.Config[option].Map, "u4", i))
+                            end
+                        end
+                    end
+                    if wave > 10 and wave < _G.Config[option].WaveToLose then
+                        if not HasPlaced(UnitID[5][1]) and HasPlaced(UnitID[4][1]) then
+                            for i = 1, GetSpawnCap(UnitID[5][1]) do
+                                PlaceToLoc(UnitID[5][3], UnitPos(_G.Config[option].Map, "u5", i))
+                            end
+                        end
+                    end
+                    if wave > 10 and wave < _G.Config[option].WaveToLose then
+                        if not HasPlaced(UnitID[6][1]) and HasPlaced(UnitID[5][1]) then
+                            for i = 1, GetSpawnCap(UnitID[6][1]) do
+                                PlaceToLoc(UnitID[6][3], UnitPos(_G.Config[option].Map, "u6", i))
+                            end
+                        end
+                    end
+                end
+            end
+            function AutoUpgrade(UpgType, mode)
                 local wave = game:GetService("Workspace")["_wave_num"].Value
                 pcall(function()
-                    if mode == "Story" then
+                    if UpgType == "Per Order" then
                         if wave > 4 then
-                            if _G.Config.Story.Units["u1"] ~= "" then
-                                local UnitID = string.split(_G.Config.Story.Units["u1"], " ")[1]
+                            if _G.Config[mode].Units["u1"] ~= "" then
+                                local UnitID = string.split(_G.Config[mode].Units["u1"], " ")[1]
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
                                         if string.match(v["_stats"].id.Value, UnitID) then
@@ -2340,9 +2636,9 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                                     end
                                 end
                             end
-                            if _G.Config.Story.Units["u2"] ~= "" and _G.Config.Story.Units["u1"] ~= "" and IsUpgraded("u1", "Story") and not IsUpgraded("u2", "Story") or 
-                            _G.Config.Story.Units["u1"] == "" and _G.Config.Story.Units["u2"] ~= "" and not IsUpgraded("u2", "Story") then
-                                local UnitID = string.split(_G.Config.Story.Units["u2"], " ")[1]
+                            if _G.Config[mode].Units["u2"] ~= "" and _G.Config[mode].Units["u1"] ~= "" and IsUpgraded("u1", mode) and not IsUpgraded("u2", mode) or 
+                            _G.Config[mode].Units["u1"] == "" and _G.Config[mode].Units["u2"] ~= "" and not IsUpgraded("u2", mode) then
+                                local UnitID = string.split(_G.Config[mode].Units["u2"], " ")[1]
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
                                         if string.match(v["_stats"].id.Value, UnitID) then
@@ -2351,9 +2647,9 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                                     end
                                 end
                             end
-                            if _G.Config.Story.Units["u3"] ~= "" and _G.Config.Story.Units["u2"] ~= "" and IsUpgraded("u2", "Story") and not IsUpgraded("u3", "Story") or 
-                            _G.Config.Story.Units["u2"] == "" and _G.Config.Story.Units["u3"] ~= "" and not IsUpgraded("u3", "Story") then
-                                local UnitID = string.split(_G.Config.Story.Units["u3"], " ")[1]
+                            if _G.Config[mode].Units["u3"] ~= "" and _G.Config[mode].Units["u2"] ~= "" and IsUpgraded("u2", mode) and not IsUpgraded("u3", mode) or 
+                            _G.Config[mode].Units["u2"] == "" and _G.Config[mode].Units["u3"] ~= "" and not IsUpgraded("u3", mode) then
+                                local UnitID = string.split(_G.Config[mode].Units["u3"], " ")[1]
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
                                         if string.match(v["_stats"].id.Value, UnitID) then
@@ -2362,9 +2658,9 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                                     end
                                 end
                             end
-                            if _G.Config.Story.Units["u4"] ~= "" and _G.Config.Story.Units["u3"] ~= "" and IsUpgraded("u3", "Story") and not IsUpgraded("u4", "Story") or 
-                            _G.Config.Story.Units["u3"] == "" and _G.Config.Story.Units["u4"] ~= "" and not IsUpgraded("u4", "Story") then
-                                local UnitID = string.split(_G.Config.Story.Units["u4"], " ")[1]
+                            if _G.Config[mode].Units["u4"] ~= "" and _G.Config[mode].Units["u3"] ~= "" and IsUpgraded("u3", mode) and not IsUpgraded("u4", mode) or 
+                            _G.Config[mode].Units["u3"] == "" and _G.Config[mode].Units["u4"] ~= "" and not IsUpgraded("u4", mode) then
+                                local UnitID = string.split(_G.Config[mode].Units["u4"], " ")[1]
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
                                         if string.match(v["_stats"].id.Value, UnitID) then
@@ -2373,9 +2669,9 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                                     end
                                 end
                             end
-                            if _G.Config.Story.Units["u5"] ~= "" and _G.Config.Story.Units["u4"] ~= "" and IsUpgraded("u4", "Story") and not IsUpgraded("u5", "Story") or 
-                            _G.Config.Story.Units["u4"] == "" and _G.Config.Story.Units["u5"] ~= "" and not IsUpgraded("u5", "Story") then
-                                local UnitID = string.split(_G.Config.Story.Units["u5"], " ")[1]
+                            if _G.Config[mode].Units["u5"] ~= "" and _G.Config[mode].Units["u4"] ~= "" and IsUpgraded("u4", mode) and not IsUpgraded("u5", mode) or 
+                            _G.Config[mode].Units["u4"] == "" and _G.Config[mode].Units["u5"] ~= "" and not IsUpgraded("u5", mode) then
+                                local UnitID = string.split(_G.Config[mode].Units["u5"], " ")[1]
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
                                         if string.match(v["_stats"].id.Value, UnitID) then
@@ -2384,9 +2680,9 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                                     end
                                 end
                             end
-                            if _G.Config.Story.Units["u6"] ~= "" and _G.Config.Story.Units["u5"] ~= "" and IsUpgraded("u5", "Story") and not IsUpgraded("u6", "Story") or 
-                            _G.Config.Story.Units["u5"] == "" and _G.Config.Story.Units["u6"] ~= "" and not IsUpgraded("u6", "Story") then
-                                local UnitID = string.split(_G.Config.Story.Units["u6"], " ")[1]
+                            if _G.Config[mode].Units["u6"] ~= "" and _G.Config[mode].Units["u5"] ~= "" and IsUpgraded("u5", mode) and not IsUpgraded("u6", mode) or 
+                            _G.Config[mode].Units["u5"] == "" and _G.Config[mode].Units["u6"] ~= "" and not IsUpgraded("u6", mode) then
+                                local UnitID = string.split(_G.Config[mode].Units["u6"], " ")[1]
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
                                         if string.match(v["_stats"].id.Value, UnitID) then
@@ -2396,30 +2692,21 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                                 end
                             end
                         end
-                    elseif mode == "Inf" then
-                        if game:GetService("Workspace")["_UNITS"]:FindFirstChild("bulma") or game:GetService("Workspace")["_UNITS"]:FindFirstChild("bulma:shiny") or 
-                        game:GetService("Workspace")["_UNITS"]:FindFirstChild("speedwagon") or game:GetService("Workspace")["_UNITS"]:FindFirstChild("speedwagon:shiny") then
+                    elseif UpgType == "Random" then
+                        if _G.Config[mode].Units["u1"] ~= "" then
                             for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                 if tostring(v["_stats"].player.Value) == game.Players.LocalPlayer.Name then
                                     if string.match(v["_stats"].id.Value, "bulma") and wave > 4 or string.match(v["_stats"].id.Value, "speedwagon") and wave > 4 then
                                         game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
-                                    elseif wave > 8 then
-                                        if string.match(v["_stats"].id.Value, "erwin") and not ErwinsUpgraded() then
-                                            game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
-                                        elseif not string.match(v["_stats"].id.Value, "erwin") then
-                                            game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
-                                        end
+                                    elseif IsUpgraded("u1", mode) then
+                                        game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
                                     end
                                 end
                             end
                         else
                             for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                 if tostring(v["_stats"].player.Value) == game.Players.LocalPlayer.Name and wave > 4 then
-                                    if string.match(v["_stats"].id.Value, "erwin") and not ErwinsUpgraded() then
-                                        game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
-                                    elseif not string.match(v["_stats"].id.Value, "erwin") then
-                                        game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
-                                    end
+                                    game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
                                 end
                             end
                         end
@@ -2466,7 +2753,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                     end
                 end
             end
-            function NotifyAndTeleport()
+            function Notify()
                 if game:GetService("Workspace")["_DATA"].GameFinished.Value == true then
                     if _G.Config.Notify["Game Results"] and not NotifySent or _G.Config.SaveStatistics and not SavedStatistics then
                         task.wait(5)
@@ -2554,11 +2841,20 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                             end)
                         end
                     end
-                    task.spawn(function()
+                end
+            end
+            function Teleport()
+                if game:GetService("Workspace")["_DATA"].GameFinished.Value == true then
+                    if _G.Config.Notify["Game Results"] and NotifySent or _G.Config.SaveStatistics and SavedStatistics then
                         _G.Config.IsA = ""
                         SaveConfig()
                         game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
-                    end)
+                    elseif not _G.Config.SaveStatistics or not _G.Config.Notify["Game Results"] then
+                        wait(2)
+                        _G.Config.IsA = ""
+                        SaveConfig()
+                        game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
+                    end
                 end
             end
 
@@ -2570,41 +2866,48 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                         _G.Config.CursedWomb.Enabled and _G.Config.IsA == "CursedWomb" or 
                         _G.Config.Chg.Enabled and _G.Config.IsA == "Chg" then
                             StartGame()
-                            Data.PlaceUnits(_G.Config.IsA)
-                            AutoUpgrade("Story")
+                            AutoUpgrade("Per Order", "Story")
                             AutoBuff()
-                            NotifyAndTeleport()
+                            Notify()
+                            Teleport()
                         elseif _G.Config.Inf.Enabled and _G.Config.IsA == "Inf" or _G.Config.ThrillerBark.Enabled and _G.Config.IsA == "ThrillerBark" then
                             StartGame()
-                            Data.PlaceUnits(_G.Config.IsA)
-                            AutoUpgrade("Inf")
+                            AutoUpgrade(_G.Config.Inf.UpgradeMode, "Inf")
                             AutoBuff()
                             AutoSell(_G.Config.IsA)
-                            NotifyAndTeleport()
+                            Notify()
+                            Teleport()
                         elseif _G.Config.InfCastle.Enabled and _G.Config.IsA == "InfCastle" then
-                            CheckMap("InfCastle")
-                            if CheckedMap then
-                                StartGame()
-                                Data.PlaceUnits(_G.Config.IsA)
-                                AutoUpgrade("Story")
-                                AutoBuff()
-                                NotifyAndTeleport()
-                            end 
+                            StartGame()
+                            AutoUpgrade("Per Order", "Story")
+                            AutoBuff()
+                            Notify()
+                            Teleport()
                         elseif _G.Config.Mission.Enabled and _G.Config.IsA == "Mission" then
-                            CheckMap("Mission")
-                            if CheckedMap then
-                                StartGame()
-                                Data.PlaceUnits(_G.Config.IsA)
-                                if string.match(_G.Config.Mission.Level, "infinite") then AutoUpgrade("Inf") else AutoUpgrade("Story") end
-                                AutoBuff()
-                                if string.match(_G.Config.Mission.Level, "infinite") then AutoSell("Mission") end
-                                NotifyAndTeleport()
-                            end
+                            StartGame()
+                            if string.match(_G.Config.Mission.Level, "infinite") then AutoUpgrade(_G.Config.Inf.UpgradeMode, "Inf") else AutoUpgrade("Per Order", "Story") end
+                            AutoBuff()
+                            if string.match(_G.Config.Mission.Level, "infinite") then AutoSell("Mission") end
+                            Notify()
+                            Teleport()
                         end
                     end)
                 end
             end)
-
+            spawn(function()
+                while wait() do
+                    pcall(function()
+                        if _G.Config.IsA == "InfCastle" or _G.Config.IsA == "Mission" then
+                            CheckMap(_G.Config.IsA)
+                            if CheckedMap then
+                                PlaceUnits(_G.Config.IsA)
+                            end
+                        else
+                            PlaceUnits(_G.Config.IsA)
+                        end
+                    end)
+                end
+            end)
         end
 
     -- MAIN SETTINGS
@@ -2669,6 +2972,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end)
             end
             MapDD:SetText("Map Selected: " .. GetMap("name", _G.Config.Inf.Map))
+            UpgDD:SetText("Upgrade Mode: " .. _G.Config.Inf.UpgradeMode)
 
             if #_G.Config.Raid.MapsFilter > 0 then
                 RaidMapDD:SetText("Maps Filter: " .. table.concat(_G.Config.Raid.MapsFilter, ", ")) else
