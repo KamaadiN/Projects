@@ -284,40 +284,6 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             return t
         end
     end
-    local function GetEnemy(EnemyType)
-        if EnemyType == "Farm" then
-            for _, v in next, game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Farm.Area):GetChildren() do
-                if game:GetService("Workspace")["__WORKSPACE"].Mobs[_G.Config.Farm.Area]:FindFirstChild(_G.Config.Farm.Enemy) then
-                    if v.Name == _G.Config.Farm.Enemy then
-                        if v:FindFirstChild("Settings").HP.Value > 0 and v:FindFirstChild("HumanoidRootPart").Position.X ~= 0 and v:FindFirstChild("HumanoidRootPart").Position.Z ~= 0 and v:FindFirstChild("HumanoidRootPart").Position.Y > -1 then
-                            return v
-                        end
-                    end
-                else
-                    return game:GetService("Workspace")["__WORKSPACE"].Areas[_G.Config.Farm.Area].Point
-                end
-            end
-            return game:GetService("Workspace")["__WORKSPACE"].Areas[GetAreas("farm")[table.find(GetAreas("farm"), _G.Config.Farm.Area) + 1]].Point
-        elseif EnemyType == "Defense" then
-            if #game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Defense.ID):GetChildren() > 0 then
-                for _, v in next, game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Defense.ID):GetChildren() do
-                    if v:FindFirstChild("Settings").HP.Value > 0 then
-                        return v
-                    end
-                end
-            else
-                return game:GetService("Workspace")["__CURRENTAREA"][_G.Config.Defense.ID]
-            end
-        elseif EnemyType == "Boss" then
-            if game:GetService("ReplicatedStorage").MapInfo.Value ~= "" then
-                for i, v in pairs(game:GetService("Workspace")["__WORKSPACE"].Mobs[game:GetService("ReplicatedStorage").MapInfo.Value]:GetChildren()) do
-                    if v:FindFirstChild("Boss") then
-                        return v
-                    end
-                end
-            end
-        end
-    end
     local function GetDefenses()
         local areas = require(game:GetService("ReplicatedStorage").Modules.Areas)
         local defenses = {}
@@ -348,6 +314,47 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 if v.Name == "x2Area" then
                     if string.match(v["W-1"].Gui.Title.Text, option) then
                         return v.CF
+                    end
+                end
+            end
+        end
+    end
+    local function GetBosses()
+        local t = {}
+        for i, v in pairs(game:GetService("ReplicatedStorage").Assets.Bosses:GetChildren()) do
+            table.insert(t, v.Name)
+        end
+        return t
+    end
+    local function GetEnemy(EnemyType)
+        if EnemyType == "Farm" then
+            for _, v in next, game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Farm.Area):GetChildren() do
+                if game:GetService("Workspace")["__WORKSPACE"].Mobs[_G.Config.Farm.Area]:FindFirstChild(_G.Config.Farm.Enemy) then
+                    if v.Name == _G.Config.Farm.Enemy then
+                        if v:FindFirstChild("Settings").HP.Value > 0 and v:FindFirstChild("HumanoidRootPart").Position.X ~= 0 and v:FindFirstChild("HumanoidRootPart").Position.Z ~= 0 and v:FindFirstChild("HumanoidRootPart").Position.Y > -1 then
+                            return v
+                        end
+                    end
+                else
+                    return game:GetService("Workspace")["__WORKSPACE"].Areas[_G.Config.Farm.Area].Point
+                end
+            end
+            return game:GetService("Workspace")["__WORKSPACE"].Areas[GetAreas("farm")[table.find(GetAreas("farm"), _G.Config.Farm.Area) + 1]].Point
+        elseif EnemyType == "Defense" then
+            if #game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Defense.ID):GetChildren() > 0 then
+                for _, v in next, game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Defense.ID):GetChildren() do
+                    if v:FindFirstChild("Settings").HP.Value > 0 then
+                        return v
+                    end
+                end
+            else
+                return game:GetService("Workspace")["__CURRENTAREA"][_G.Config.Defense.ID]
+            end
+        elseif EnemyType == "Boss" then
+            if game:GetService("ReplicatedStorage").MapInfo.Value ~= "" then
+                for i, v in pairs(game:GetService("Workspace")["__WORKSPACE"].Mobs[game:GetService("ReplicatedStorage").MapInfo.Value]:GetChildren()) do
+                    if table.find(GetBosses(), v.Name) then
+                        return v
                     end
                 end
             end
@@ -768,7 +775,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end)
             end
         end
-        function Bosses()
+        function SkillBosses()
             while wait() do
                 pcall(function()
                     if _G.Config.Bosses and not _G.Config.Defense.Enabled and not _G.Config.Farm.Enabled then
@@ -912,7 +919,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         task.spawn(Farm)
         task.spawn(Defense)
         task.spawn(PowerArea)
-        task.spawn(Bosses)
+        task.spawn(SkillBosses)
         task.spawn(Clicker)
         task.spawn(Collect)
         task.spawn(Rankup)
