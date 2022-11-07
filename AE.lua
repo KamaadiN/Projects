@@ -12,8 +12,10 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
 
         Farm = {
             Enabled = false,
-            Enemy = "Luffe",
-            Area = "Ooy Piece"
+            KillMob = false,
+            Mob = "Luffe",
+            Area = "Ooy Piece",
+            Areas = {}
         },
         Defense = {
             Enabled = false,
@@ -34,6 +36,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         Gamepasses = {
             ["Teleport"] = false,
             ["Auto Click"] = false,
+            ["Magnet"] = false,
             ["Fast Open"] = false
         },
 
@@ -53,7 +56,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         JumpPower = 50,
         Keybind = "Enum.KeyCode.RightAlt",
 
-        ConfigChanges = 1.33
+        ConfigChanges = 1.4444
     }
 
     local hubname = " MAZTER HUB - Anime Evolution"
@@ -145,7 +148,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         if ClickType == "train" then
             game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"PowerTrain", Target})
         elseif ClickType == "attack" then
-            game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"AttackMob", Target})
+            game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"AttackMob", Target, "Left Arm"})
         end
     end
     local function TeleportTo(CFrame)
@@ -329,8 +332,8 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
     local function GetEnemy(EnemyType)
         if EnemyType == "Farm" then
             for _, v in next, game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Farm.Area):GetChildren() do
-                if game:GetService("Workspace")["__WORKSPACE"].Mobs[_G.Config.Farm.Area]:FindFirstChild(_G.Config.Farm.Enemy) then
-                    if v.Name == _G.Config.Farm.Enemy then
+                if game:GetService("Workspace")["__WORKSPACE"].Mobs[_G.Config.Farm.Area]:FindFirstChild(_G.Config.Farm.Mob) then
+                    if v.Name == _G.Config.Farm.Mob then
                         if v:FindFirstChild("Settings").HP.Value > 0 and v:FindFirstChild("HumanoidRootPart").Position.X ~= 0 and v:FindFirstChild("HumanoidRootPart").Position.Z ~= 0 and v:FindFirstChild("HumanoidRootPart").Position.Y > -1 then
                             return v
                         end
@@ -409,20 +412,38 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end,
                 Enabled = _G.Config.Farm.Enabled
             })
+            MainPg.Toggle({
+                Text = "Kill Mob Selected",
+                Callback = function(v)
+                    _G.Config.Farm.KillMob = v
+                    SaveConfig()
+                end,
+                Enabled = _G.Config.Farm.KillMob
+            })
             _G.AreasDD = MainPg.Dropdown({
                 Text = "Area",
                 Callback = function(v)
-                    _G.Config.Farm.Area = v
-                    _G.Config.Farm.Enemy = ""
-                    _G.EnemiesDD:SetOptions(GetFighters("mobs", v))
+                    if _G.Config.Farm.KillMob then
+                        _G.Config.Farm.Area = v
+                        _G.Config.Farm.Mob = ""
+                        _G.MobsDD:SetOptions(GetFighters("mobs", v))
+                    else
+                        if not table.find(_G.Config.Farm.Areas, v) then
+                            table.insert(_G.Config.Farm.Areas, v)
+                        else
+                            table.remove(_G.Config.Farm.Areas, table.find(_G.Config.Farm.Areas, v))
+                        end
+                        _G.Config.Farm.Mob = ""
+                        _G.MobsDD:SetOptions(GetFighters("mobs", _G.Config.Farm.Area))
+                    end
                     SaveConfig()
                 end,
                 Options = GetAreas("farm")
             })
-            _G.EnemiesDD = MainPg.Dropdown({
-                Text = "Enemies",
+            _G.MobsDD = MainPg.Dropdown({
+                Text = "Mobs",
                 Callback = function(v)
-                    _G.Config.Farm.Enemy = v
+                    _G.Config.Farm.Mob = v
                     SaveConfig()
                 end,
                 Options = GetFighters("mobs", _G.Config.Farm.Area)
@@ -696,7 +717,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         function CheckBody()
             while wait() do
                 pcall(function()
-                    if _G.Config.Farm.Enabled or _G.Config.Defense.Enabled or _G.Config.OpenFighter or _G.Config.PowerArea.Enabled then
+                    if _G.Config.OpenFighter or _G.Config.PowerArea.Enabled then
                         if game.Players.LocalPlayer.Character then
                             if not game.Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("Body") then
                                 Body("create", "Velocity", "Body", game.Players.LocalPlayer.Character.HumanoidRootPart)
@@ -712,12 +733,21 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             while wait() do
                 pcall(function()
                     if _G.Config.Farm.Enabled then
-                        if game.Players.LocalPlayer.Character then
-                            if GetEnemy("Farm"):IsA("Model") then
-                                TeleportTo(GetEnemy("Farm").HumanoidRootPart.CFrame)
-                                Click("attack", GetEnemy("Farm"))
-                            elseif GetEnemy("Farm"):IsA("BasePart") then
-                                TeleportTo(GetEnemy("Farm").CFrame)
+                        if not _G.Config.Farm.KillMob then
+                            for i, v in pairs(workspace.__WORKSPACE.Mobs:GetChildren()) do
+                                if table.find(_G.Config.Farm.Areas, v.Name) then
+                                    for i2, v2 in pairs(v:GetChildren()) do 
+                                        Click("attack", v2)
+                                    end
+                                end
+                            end
+                        else
+                            if _G.Config.Farm.Mob ~= "" then
+                                for i, v in pairs(workspace.__WORKSPACE.Mobs[_G.Config.Farm.Area]:GetChildren()) do
+                                    if v.Name == _G.Config.Farm.Mob then
+                                        Click("attack", v)
+                                    end
+                                end
                             end
                         end
                     end
@@ -727,39 +757,9 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         function Defense()
             while wait() do
                 pcall(function()
-                    if _G.Config.Defense.Enabled and not _G.Config.Farm.Enabled then
-                        if game.Players.LocalPlayer.Character then
-                            if GetEnemy("Defense"):IsA("Model") then
-                                TeleportTo(GetEnemy("Defense").HumanoidRootPart.CFrame)
-                                Click("attack", GetEnemy("Defense"))
-                            elseif GetEnemy("Defense"):IsA("BasePart") then
-                                TeleportTo(GetEnemy("Defense").CFrame + Vector3.new(0,20,0))
-                            end
-                            for i, v in pairs(game:GetService("Workspace")["__WORKSPACE"].Useless:GetChildren()) do
-                                if v.Name == "Part" and v:IsA("BasePart") then
-                                    v.CanCollide = false
-                                end
-                                if v.Name == "Model" and v:IsA("Model") then
-                                    for i, v in pairs(v:GetChildren()) do
-                                        if string.match(v.Name, "13_") then
-                                            v.CanCollide = false
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    else
-                        for i, v in pairs(game:GetService("Workspace")["__WORKSPACE"].Useless:GetChildren()) do
-                            if v.Name == "Part" and v:IsA("BasePart") then
-                                v.CanCollide = true
-                            end
-                            if v.Name == "Model" and v:IsA("Model") then
-                                for i, v in pairs(v:GetChildren()) do
-                                    if string.match(v.Name, "13_") then
-                                        v.CanCollide = true
-                                    end
-                                end
-                            end
+                    if _G.Config.Defense.Enabled then
+                        for i, v in pairs(workspace.__WORKSPACE.Mobs[_G.Config.Defense.ID]:GetChildren()) do 
+                            Click("attack", v)
                         end
                     end
                 end)
@@ -778,13 +778,12 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         function SkillBosses()
             while wait() do
                 pcall(function()
-                    if _G.Config.Bosses and not _G.Config.Defense.Enabled and not _G.Config.Farm.Enabled then
-                        if game.Players.LocalPlayer.Character then
-                            if GetEnemy("Boss"):IsA("Model") then
-                                TeleportTo(GetEnemy("Boss").HumanoidRootPart.CFrame)
-                                Click("attack", GetEnemy("Boss"))
-                            elseif GetEnemy("Boss"):IsA("BasePart") then
-                                TeleportTo(GetEnemy("Boss").CFrame)
+                    if _G.Config.Bosses then
+                        if game:GetService("ReplicatedStorage").MapInfo.Value ~= "" then
+                            for i, v in pairs(game:GetService("Workspace")["__WORKSPACE"].Mobs[game:GetService("ReplicatedStorage").MapInfo.Value]:GetChildren()) do
+                                if table.find(GetBosses(), v.Name) then
+                                    Click("attack", v)
+                                end
                             end
                         end
                     end
@@ -808,6 +807,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                         for _, v in pairs(game:GetService("Workspace")["__DROPS"]:GetChildren()) do
                             if v:IsA("BasePart") then
                                 v.Size = Vector3.new(0.5,0.5,0.5)
+                                v.CanCollide = false
                                 v.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                             end
                         end
@@ -937,9 +937,19 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
 
         game:GetService("RunService").RenderStepped:Connect(function()
 
-            _G.AreasDD:SetText("Area Selected: ".. _G.Config.Farm.Area)
-            _G.EnemiesDD:SetText("Enemy Selected: ".. _G.Config.Farm.Enemy)
+            if _G.Config.Farm.KillMob then
+                _G.AreasDD:SetText("Area Selected: ".. _G.Config.Farm.Area)
+            elseif not _G.Config.Farm.KillMob then
+                if #_G.Config.Farm.Areas > 0 then
+                    _G.AreasDD:SetText("Areas Selected: ".. table.concat(_G.Config.Farm.Areas, ", ")) else
+                    _G.AreasDD:SetText("Select Area")
+                end
+            end
 
+            if _G.Config.Farm.Mob ~= "" then
+                _G.MobsDD:SetText("Mob Selected: ".. _G.Config.Farm.Mob) else
+                _G.MobsDD:SetText("Select Mob")
+            end
             _G.DefenseDD:SetText("Defense Selected: ".. _G.Config.Defense.ID)
 
             _G.PowerAreaDD:SetText("Power Area Selected: ".. _G.Config.PowerArea.Multiplier)
