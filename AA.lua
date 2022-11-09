@@ -4,286 +4,7 @@ game:GetService("Players").LocalPlayer.Idled:connect(function()
     game:GetService("VirtualUser"):ClickButton2(Vector2.new())
 end)
 
-function DataStore()
-    local DS = {}
-
-    function DS.GetAllMaps()
-        return {
-            {jjk = "Cursed Academy"},
-            {magnolia = "Magic Town"},
-            {hxhant = "Ant Kingdom"},
-            {hueco = "Hollow World"},
-            {tokyoghoul = "Ghoul City"},
-            {marineford = "Marine's Ford"},
-            {naruto = "Hidden Sand Village"},
-            {demonslayer = "Snowy Town"},
-            {aot = "Shiganshinu District"},
-            {namek = "Planet Namak"}
-        }   
-    end
-    function DS.GetRaids()
-        return {
-            {west_city_raid = "West City"},
-            {demonslayer_raid = "Infinity Train"},
-            {naruto_raid = "Hidden Sand Village"},
-            {aot_raid = "Shiganshinu District"}
-        }
-    end
-    function DS.GetTeleports()
-        return {
-            {["Play"] = game:GetService("Workspace")["_teleports"].play.CFrame},
-            {["Dungeons"] = game:GetService("Workspace")["_LOBBIES"]["story build"].Teleporter.beamholder.CFrame + Vector3.new(0,2,0)},
-            {["Summon"] = game:GetService("Workspace")["_teleports"].summon.CFrame},
-            {["Challenge"] = game:GetService("Workspace")["_CHALLENGES"].shell.floor.CFrame},
-            {["Raid"] = game:GetService("Workspace")["_RAID"].shell.floor.CFrame},
-            {["Leaderboards"] = game:GetService("Workspace")["_LEADERBOARDS_"].shell.floor.CFrame},
-            {["Gojo Domain"] = game:GetService("Workspace")["_gojodomain"].entrance.CFrame},
-            {["Infinity Castle"] = game:GetService("Workspace")["_infinity_castle"].entrance.CFrame},
-            {["Sukuna Domain"] = game:GetService("Workspace")["_sukunadomain"].entrance.CFrame}
-        }
-    end
-
-    function DS.Codes()
-        return {
-            "HALLOWEEN",
-            "CURSE2",
-            "CURSE",
-            "subtomaokuma",
-            "TOADBOIGAMING",
-            "SubToKelvingts",
-            "SubToBlamspot",
-            "FictioNTheFirst",
-            "KingLuffy",
-            "noclypso"
-        }
-    end
-
-    return DS;
-end
-
-local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/MaterialLibrary.lua"))()
-local Data = DataStore()
 local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Notifier.lua"))()
-
-_G.Config = {
-    IsA = "",
-
-    Story = {
-        Enabled = false,
-        CompleteAllLevels = false,
-        ErwinUntilBuff = false,
-        Map = "namek",
-        Level = "namek_level_1",
-        Difficulty = "Normal",
-        Units = {
-            u1 = "",
-            u2 = "",
-            u3 = "",
-            u4 = "",
-            u5 = "",
-            u6 = ""
-        },
-        SpawnCap = {
-            u1 = 3,
-            u2 = 6,
-            u3 = 6,
-            u4 = 6,
-            u5 = 6,
-            u6 = 6
-        },
-        UpgradeCap = {
-            u1 = 5,
-            u2 = 5,
-            u3 = 5,
-            u4 = 5,
-            u5 = 5,
-            u6 = 5
-        }
-    },
-    Inf = {
-        Enabled = false,
-        Map = "namek",
-        WaveToLose = 24,
-        UpgradeMode = "Random",
-        Units = {
-            u1 = "",
-            u2 = "",
-            u3 = "",
-            u4 = "",
-            u5 = "",
-            u6 = ""
-        }
-    },
-    Chg = {
-        Enabled = false,
-        BlockedMaps = {},
-        BlockedChgs = {},
-        RewardsFilter = {},
-        Lobby = "",
-        Map = ""
-    },
-    Raid = {
-        Enabled = false,
-        MapsFilter = {},
-        Map = "",
-        Lobby = ""
-    },
-    InfCastle = {
-        Enabled = false,
-        Room = 1,
-        Map = ""
-    },
-    Mission = {
-        Enabled = false,
-        Map = "",
-        Name = "",
-        Desc = "",
-        Level = ""
-    },
-    CursedWomb = {
-        Enabled = false,
-        Map = "jjk"
-    },
-    ThrillerBark = {
-        Enabled = false,
-        WaveToLose = 50,
-        Map = "thriller_bark"
-    },
-
-    WebhookURL = "",
-    DiscordID = "",
-    Mention = true,
-    Notify = {
-        Challenge = false,
-        Raid = false,
-        Summon = false,
-        ["Game Results"] = false,
-        ["Purchased Items"] = false,
-    },
-
-    SaveStatistics = false,
-    Stats = {
-        ["Gems Received"] = 0,
-        ["XP Received"] = 0,
-        ["Candies Received"] = 0,
-        ["Levels Completed"] = 0
-    },
-
-    AutoSummon = false,
-    Summoning = false,
-    UnitsToGet = {},
-    SummonWith = "gems",
-    RaritiesToSell = {},
-
-    AcceptQuest = false,
-    DailyRewards = false,
-    RedeemQuests = false,
-
-    BuyItem = false,
-    ItemsToBuy = {},
-    HideLeaderboard = false,
-    HideName = false,
-
-    SilentExec = false,
-    Keybind = "Enum.KeyCode.RightAlt",
-
-    Collection = {
-        Money = {},
-        All = {}
-    },
-    ConfigChanges = 1.8
-}
-
-local hubname = " MAZTER HUB - Anime Adventures"
-local configpath = "MazterHub/AnimeAdventures.txt"
-local shpath = "MazterHub/ServerHop.json"
-
-local function MergeConfig(OldConfig, NewConfig)
-
-    local primaryTypes = {"string", "number", "boolean"}
-    local othersTypes = {"table"}
-
-    for k, v in pairs(OldConfig) do
-        for k2, v2 in pairs(NewConfig) do
-            if table.find(primaryTypes, type(v)) and table.find(primaryTypes, type(v2)) then
-                if k ~= "ConfigChanges" and k == k2 and v ~= v2 then
-                    NewConfig[k] = v
-                end
-            end
-            if table.find(othersTypes, type(v)) and table.find(othersTypes, type(v2)) then
-                for k3, v3 in pairs(v) do
-                    for k4, v4 in pairs(v2) do
-                        if table.find({"string"}, type(k3)) then
-                            if table.find(primaryTypes, type(v3)) and table.find(primaryTypes, type(v4)) then
-                                if k3 == k4 and v3 ~= v4 then
-                                    NewConfig[k][k3] = v3
-                                end
-                            end
-                        end
-                        if table.find({"number"}, type(k3)) then
-                            if table.find(primaryTypes, type(v3)) and table.find(primaryTypes, type(v4)) then
-                                NewConfig[k][k3] = v3
-                            end
-                        end 
-                        if table.find(othersTypes, type(v3)) and table.find(othersTypes, type(v4)) then
-                            for k5, v5 in pairs(v3) do
-                                for k6, v6 in pairs(v4) do
-                                    if table.find({"string"}, type(k5)) then
-                                        if table.find(primaryTypes, type(v5)) and table.find(primaryTypes, type(v6)) then
-                                            if k5 == k6 and v5 ~= v6 then
-                                                NewConfig[k][k3][k5] = v5
-                                            end
-                                        end
-                                    end
-                                    if table.find({"number"}, type(k5)) then
-                                        if table.find(primaryTypes, type(v5)) and table.find(primaryTypes, type(v6)) then
-                                            NewConfig[k][k3][k5] = v5
-                                        end
-                                    end 
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-local function LoadConfig()
-    _G.AllIDs = {}
-    if not isfolder("MazterHub") then
-        makefolder("MazterHub")
-    end
-    if isfile(configpath) then
-        local OldConfig = game:GetService("HttpService"):JSONDecode(readfile(configpath))
-        if OldConfig["ConfigChanges"] ~= _G.Config.ConfigChanges then
-            MergeConfig(OldConfig, _G.Config)
-            writefile(configpath, game:GetService("HttpService"):JSONEncode(_G.Config))
-        else
-            _G.Config = OldConfig
-        end
-    end
-    if isfile(shpath) then
-        _G.AllIDs = game:GetService("HttpService"):JSONDecode(readfile(shpath)) 
-    else
-        table.insert(_G.AllIDs, os.date("!*t").hour)
-        pcall(function()
-            writefile(shpath, game:GetService("HttpService"):JSONEncode(_G.AllIDs))
-        end)
-    end
-    _G.StoryUnitDD = {}
-    _G.InfUnitDD = {}
-    _G.UpgCapSD = {}
-    _G.Config.Raid.Lobby = ""
-    _G.Config.Chg.Lobby = ""
-    _G.Config.Summoning = true
-end
-local function SaveConfig()
-    if (writefile) then
-        writefile(configpath, game:GetService("HttpService"):JSONEncode(_G.Config))
-    end
-end
-LoadConfig()
 
 local function InLobby()
     if game.PlaceId == 8304191830 then
@@ -299,398 +20,692 @@ local function InGame()
         return false
     end
 end
-local function ServerHop(PlaceID)
-    local FoundAnything = ""
-    local Site;
-    if FoundAnything == "" then
-        Site = game:GetService("HttpService"):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100'))
-    else
-        Site = game:GetService("HttpService"):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100&cursor=' .. FoundAnything))
+
+if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Whitelist.lua"))(), game.Players.LocalPlayer.UserId) and (InLobby() or InGame()) then
+
+    function DataStore()
+        local DS = {}
+
+        function DS.GetAllMaps()
+            return {
+                {jjk = "Cursed Academy"},
+                {magnolia = "Magic Town"},
+                {hxhant = "Ant Kingdom"},
+                {hueco = "Hollow World"},
+                {tokyoghoul = "Ghoul City"},
+                {marineford = "Marine's Ford"},
+                {naruto = "Hidden Sand Village"},
+                {demonslayer = "Snowy Town"},
+                {aot = "Shiganshinu District"},
+                {namek = "Planet Namak"}
+            }   
+        end
+        function DS.GetRaids()
+            return {
+                {west_city_raid = "West City"},
+                {demonslayer_raid = "Infinity Train"},
+                {naruto_raid = "Hidden Sand Village"},
+                {aot_raid = "Shiganshinu District"}
+            }
+        end
+        function DS.GetTeleports()
+            return {
+                {["Play"] = game:GetService("Workspace")["_teleports"].play.CFrame},
+                {["Dungeons"] = game:GetService("Workspace")["_LOBBIES"]["story build"].Teleporter.beamholder.CFrame + Vector3.new(0,2,0)},
+                {["Summon"] = game:GetService("Workspace")["_teleports"].summon.CFrame},
+                {["Challenge"] = game:GetService("Workspace")["_CHALLENGES"].shell.floor.CFrame},
+                {["Raid"] = game:GetService("Workspace")["_RAID"].shell.floor.CFrame},
+                {["Leaderboards"] = game:GetService("Workspace")["_LEADERBOARDS_"].shell.floor.CFrame},
+                {["Gojo Domain"] = game:GetService("Workspace")["_gojodomain"].entrance.CFrame},
+                {["Infinity Castle"] = game:GetService("Workspace")["_infinity_castle"].entrance.CFrame},
+                {["Sukuna Domain"] = game:GetService("Workspace")["_sukunadomain"].entrance.CFrame}
+            }
+        end
+
+        function DS.Codes()
+            return {
+                "HALLOWEEN",
+                "CURSE2",
+                "CURSE",
+                "subtomaokuma",
+                "TOADBOIGAMING",
+                "SubToKelvingts",
+                "SubToBlamspot",
+                "FictioNTheFirst",
+                "KingLuffy",
+                "noclypso"
+            }
+        end
+
+        return DS;
     end
-    local ID = ""
-    if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
-        FoundAnything = Site.nextPageCursor
-    end
-    local num = 0;
-    for i,v in pairs(Site.data) do
-        local Possible = true
-        ID = tostring(v.id)
-        if tonumber(v.maxPlayers) > tonumber(v.playing) then
-            for _,Existing in pairs(_G.AllIDs) do
-                if num ~= 0 then
-                    if ID == tostring(Existing) then
-                        Possible = false
-                    end
-                else
-                    if tonumber(os.date("!*t").hour) ~= tonumber(Existing) then
-                        local delFile = pcall(function()
-                            delfile(shpath)
-                            _G.AllIDs = {}
-                            table.insert(_G.AllIDs, os.date("!*t").hour)
-                        end)
+
+    local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/MaterialLibrary.lua"))()
+    local Data = DataStore()
+
+    _G.Config = {
+        IsA = "",
+
+        Story = {
+            Enabled = false,
+            CompleteAllLevels = false,
+            ErwinUntilBuff = false,
+            Map = "namek",
+            Level = "namek_level_1",
+            Difficulty = "Normal",
+            Units = {
+                u1 = "",
+                u2 = "",
+                u3 = "",
+                u4 = "",
+                u5 = "",
+                u6 = ""
+            },
+            SpawnCap = {
+                u1 = 3,
+                u2 = 6,
+                u3 = 6,
+                u4 = 6,
+                u5 = 6,
+                u6 = 6
+            },
+            UpgradeCap = {
+                u1 = 5,
+                u2 = 5,
+                u3 = 5,
+                u4 = 5,
+                u5 = 5,
+                u6 = 5
+            }
+        },
+        Inf = {
+            Enabled = false,
+            Map = "namek",
+            WaveToLose = 24,
+            UpgradeMode = "Random",
+            Units = {
+                u1 = "",
+                u2 = "",
+                u3 = "",
+                u4 = "",
+                u5 = "",
+                u6 = ""
+            }
+        },
+        Chg = {
+            Enabled = false,
+            BlockedMaps = {},
+            BlockedChgs = {},
+            RewardsFilter = {},
+            Lobby = "",
+            Map = ""
+        },
+        Raid = {
+            Enabled = false,
+            MapsFilter = {},
+            Map = "",
+            Lobby = ""
+        },
+        InfCastle = {
+            Enabled = false,
+            Room = 1,
+            Map = ""
+        },
+        Mission = {
+            Enabled = false,
+            Map = "",
+            Name = "",
+            Desc = "",
+            Level = ""
+        },
+        CursedWomb = {
+            Enabled = false,
+            Map = "jjk"
+        },
+        ThrillerBark = {
+            Enabled = false,
+            WaveToLose = 50,
+            Map = "thriller_bark"
+        },
+
+        WebhookURL = "",
+        DiscordID = "",
+        Mention = true,
+        Notify = {
+            Challenge = false,
+            Raid = false,
+            Summon = false,
+            ["Game Results"] = false,
+            ["Purchased Items"] = false,
+        },
+
+        SaveStatistics = false,
+        Stats = {
+            ["Gems Received"] = 0,
+            ["XP Received"] = 0,
+            ["Candies Received"] = 0,
+            ["Levels Completed"] = 0
+        },
+
+        AutoSummon = false,
+        Summoning = false,
+        UnitsToGet = {},
+        SummonWith = "gems",
+        RaritiesToSell = {},
+
+        AcceptQuest = false,
+        DailyRewards = false,
+        RedeemQuests = false,
+
+        BuyItem = false,
+        ItemsToBuy = {},
+        HideLeaderboard = false,
+        HideName = false,
+
+        SilentExec = false,
+        Keybind = "Enum.KeyCode.RightAlt",
+
+        Collection = {
+            Money = {},
+            All = {}
+        },
+        ConfigChanges = 1.8
+    }
+
+    local hubname = " MAZTER HUB - Anime Adventures"
+    local configpath = "MazterHub/AnimeAdventures.txt"
+    local shpath = "MazterHub/ServerHop.json"
+
+    local function MergeConfig(OldConfig, NewConfig)
+
+        local primaryTypes = {"string", "number", "boolean"}
+        local othersTypes = {"table"}
+
+        for k, v in pairs(OldConfig) do
+            for k2, v2 in pairs(NewConfig) do
+                if table.find(primaryTypes, type(v)) and table.find(primaryTypes, type(v2)) then
+                    if k ~= "ConfigChanges" and k == k2 and v ~= v2 then
+                        NewConfig[k] = v
                     end
                 end
-                num = num + 1
-            end
-            if Possible == true then
-                table.insert(_G.AllIDs, ID)
-                wait()
-                pcall(function()
-                    writefile(shpath, game:GetService("HttpService"):JSONEncode(_G.AllIDs))
-                    wait()
-                    game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceID, ID, game.Players.LocalPlayer)
-                end)
-                wait(4)
+                if table.find(othersTypes, type(v)) and table.find(othersTypes, type(v2)) then
+                    for k3, v3 in pairs(v) do
+                        for k4, v4 in pairs(v2) do
+                            if table.find({"string"}, type(k3)) then
+                                if table.find(primaryTypes, type(v3)) and table.find(primaryTypes, type(v4)) then
+                                    if k3 == k4 and v3 ~= v4 then
+                                        NewConfig[k][k3] = v3
+                                    end
+                                end
+                            end
+                            if table.find({"number"}, type(k3)) then
+                                if table.find(primaryTypes, type(v3)) and table.find(primaryTypes, type(v4)) then
+                                    NewConfig[k][k3] = v3
+                                end
+                            end 
+                            if table.find(othersTypes, type(v3)) and table.find(othersTypes, type(v4)) then
+                                for k5, v5 in pairs(v3) do
+                                    for k6, v6 in pairs(v4) do
+                                        if table.find({"string"}, type(k5)) then
+                                            if table.find(primaryTypes, type(v5)) and table.find(primaryTypes, type(v6)) then
+                                                if k5 == k6 and v5 ~= v6 then
+                                                    NewConfig[k][k3][k5] = v5
+                                                end
+                                            end
+                                        end
+                                        if table.find({"number"}, type(k5)) then
+                                            if table.find(primaryTypes, type(v5)) and table.find(primaryTypes, type(v6)) then
+                                                NewConfig[k][k3][k5] = v5
+                                            end
+                                        end 
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
             end
         end
     end
-end
-local function GetUnitsID(unittype, unitname)
-    local Units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
-    local ids = {}
-    if game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("collection") then
-        if unittype == "all" then
-            for _, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.collection.grid.List.Outer.UnitFrames:GetChildren()) do
-                if v:IsA("ImageButton") then
-                    local UnitName;
-                    local UnitLevel;
-                    for _, u in pairs(Units) do
-                        if u["name"] == v.name.Text then
-                            UnitName = u["id"]
-                            UnitLevel = v.Main.Level.Text
+    local function LoadConfig()
+        _G.AllIDs = {}
+        if not isfolder("MazterHub") then
+            makefolder("MazterHub")
+        end
+        if isfile(configpath) then
+            local OldConfig = game:GetService("HttpService"):JSONDecode(readfile(configpath))
+            if OldConfig["ConfigChanges"] ~= _G.Config.ConfigChanges then
+                MergeConfig(OldConfig, _G.Config)
+                writefile(configpath, game:GetService("HttpService"):JSONEncode(_G.Config))
+            else
+                _G.Config = OldConfig
+            end
+        end
+        if isfile(shpath) then
+            _G.AllIDs = game:GetService("HttpService"):JSONDecode(readfile(shpath)) 
+        else
+            table.insert(_G.AllIDs, os.date("!*t").hour)
+            pcall(function()
+                writefile(shpath, game:GetService("HttpService"):JSONEncode(_G.AllIDs))
+            end)
+        end
+        _G.StoryUnitDD = {}
+        _G.InfUnitDD = {}
+        _G.UpgCapSD = {}
+        _G.Config.Raid.Lobby = ""
+        _G.Config.Chg.Lobby = ""
+        _G.Config.Summoning = true
+    end
+    local function SaveConfig()
+        if (writefile) then
+            writefile(configpath, game:GetService("HttpService"):JSONEncode(_G.Config))
+        end
+    end
+    LoadConfig()
+
+    local function ServerHop(PlaceID)
+        local FoundAnything = ""
+        local Site;
+        if FoundAnything == "" then
+            Site = game:GetService("HttpService"):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100'))
+        else
+            Site = game:GetService("HttpService"):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100&cursor=' .. FoundAnything))
+        end
+        local ID = ""
+        if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
+            FoundAnything = Site.nextPageCursor
+        end
+        local num = 0;
+        for i,v in pairs(Site.data) do
+            local Possible = true
+            ID = tostring(v.id)
+            if tonumber(v.maxPlayers) > tonumber(v.playing) then
+                for _,Existing in pairs(_G.AllIDs) do
+                    if num ~= 0 then
+                        if ID == tostring(Existing) then
+                            Possible = false
+                        end
+                    else
+                        if tonumber(os.date("!*t").hour) ~= tonumber(Existing) then
+                            local delFile = pcall(function()
+                                delfile(shpath)
+                                _G.AllIDs = {}
+                                table.insert(_G.AllIDs, os.date("!*t").hour)
+                            end)
                         end
                     end
-                    if not table.find(ids, UnitName .. " - LV. " .. UnitLevel .. " - " .. v["_uuid"].Value) then
-                        table.insert(ids, UnitName .. " - LV. " .. UnitLevel .. " - " .. v["_uuid"].Value)
-                    end
+                    num = num + 1
+                end
+                if Possible == true then
+                    table.insert(_G.AllIDs, ID)
+                    wait()
+                    pcall(function()
+                        writefile(shpath, game:GetService("HttpService"):JSONEncode(_G.AllIDs))
+                        wait()
+                        game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceID, ID, game.Players.LocalPlayer)
+                    end)
+                    wait(4)
                 end
             end
-        elseif unittype == "money" then
-            for _, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.collection.grid.List.Outer.UnitFrames:GetChildren()) do
-                if v:IsA("ImageButton") then
-                    local UnitName = ""
-                    local UnitLevel = ""
-                    for k, u in pairs(Units) do
-                        if k == "bulma" or k == "speedwagon" then
+        end
+    end
+    local function GetUnitsID(unittype, unitname)
+        local Units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
+        local ids = {}
+        if game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("collection") then
+            if unittype == "all" then
+                for _, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.collection.grid.List.Outer.UnitFrames:GetChildren()) do
+                    if v:IsA("ImageButton") then
+                        local UnitName;
+                        local UnitLevel;
+                        for _, u in pairs(Units) do
                             if u["name"] == v.name.Text then
                                 UnitName = u["id"]
                                 UnitLevel = v.Main.Level.Text
                             end
                         end
+                        if not table.find(ids, UnitName .. " - LV. " .. UnitLevel .. " - " .. v["_uuid"].Value) then
+                            table.insert(ids, UnitName .. " - LV. " .. UnitLevel .. " - " .. v["_uuid"].Value)
+                        end
                     end
-                    if UnitName ~= "" and UnitLevel ~= "" and not table.find(ids, UnitName .. " - LV. " .. UnitLevel .. " - " .. v["_uuid"].Value) then
-                        table.insert(ids, UnitName .. " - LV. " .. UnitLevel .. " - " .. v["_uuid"].Value)
+                end
+            elseif unittype == "money" then
+                for _, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.collection.grid.List.Outer.UnitFrames:GetChildren()) do
+                    if v:IsA("ImageButton") then
+                        local UnitName = ""
+                        local UnitLevel = ""
+                        for k, u in pairs(Units) do
+                            if k == "bulma" or k == "speedwagon" then
+                                if u["name"] == v.name.Text then
+                                    UnitName = u["id"]
+                                    UnitLevel = v.Main.Level.Text
+                                end
+                            end
+                        end
+                        if UnitName ~= "" and UnitLevel ~= "" and not table.find(ids, UnitName .. " - LV. " .. UnitLevel .. " - " .. v["_uuid"].Value) then
+                            table.insert(ids, UnitName .. " - LV. " .. UnitLevel .. " - " .. v["_uuid"].Value)
+                        end
+                    end
+                end
+            elseif unittype == "id" then
+                for _, u in pairs(Units) do
+                    if u["name"] == unitname then
+                        return u["id"]
+                    end
+                end
+            elseif unittype == "allgameunits" then
+                local someunits = {}
+                for v2, v3 in pairs(game:GetService("ReplicatedStorage").src.Data.Units:GetDescendants()) do
+                    if v3:IsA("ModuleScript") and v3.Name ~= "UnitPresets" and not string.match(v3.Name, "_PVE") and not string.match(v3.Name, "Raid") and not string.match(v3.Name, "_Leaderboard") then
+                        for v4, v5 in pairs(require(v3)) do
+                            someunits[v4] = v5
+                        end
+                    end
+                end
+                for id, v in pairs(someunits) do
+                    if not string.match(id, "_evolved") and not string.match(id, "_marineford") and not string.match(id, "big_test") then
+                        if v["cost"] and v["cost"] ~= 1 then
+                            table.insert(ids, id)
+                        end
                     end
                 end
             end
-        elseif unittype == "id" then
-            for _, u in pairs(Units) do
-                if u["name"] == unitname then
-                    return u["id"]
+            table.sort(ids, function(a, b) return a:lower() < b:lower() end)
+            return ids
+        end
+    end 
+    local function CopyUnitsID(mode)
+        local units = {}
+        for i, v in pairs(_G.Config[mode].Units) do
+            table.insert(units, v)
+        end
+        setclipboard(table.concat(units, "\n"))
+    end
+    local function EquipUnits(mode)
+        game:GetService("ReplicatedStorage").endpoints.client_to_server.unequip_all:InvokeServer()
+        wait()
+        for pos = 1, 6 do
+            if _G.Config[mode].Units["u"..pos] ~= "" then
+                local id = string.split(_G.Config[mode].Units["u"..pos], " ")[3]
+                game:GetService("ReplicatedStorage").endpoints.client_to_server.equip_unit:InvokeServer(id)
+            end
+            wait(0.55)
+        end
+    end
+    local function UnitsPlaced(UnitID)
+        local Units = 0
+        for i, v in pairs(game:GetService("Workspace")["_UNITS"]:GetChildren()) do
+            if v["_stats"].player.Value == game.Players.LocalPlayer then
+                if v["_stats"].id.Value == UnitID then
+                    Units += 1
                 end
             end
-        elseif unittype == "allgameunits" then
-            local someunits = {}
-            for v2, v3 in pairs(game:GetService("ReplicatedStorage").src.Data.Units:GetDescendants()) do
-                if v3:IsA("ModuleScript") and v3.Name ~= "UnitPresets" and not string.match(v3.Name, "_PVE") and not string.match(v3.Name, "Raid") and not string.match(v3.Name, "_Leaderboard") then
-                    for v4, v5 in pairs(require(v3)) do
-                        someunits[v4] = v5
-                    end
+        end
+        return Units
+    end
+    local function GetCapsules()
+        local c = {}
+        for i, v in pairs(require(game:GetService("ReplicatedStorage").src.Data.Items)) do
+            if string.find(tostring(i), "capsule") then
+            table.insert(c, v["name"])
+            end
+        end
+        return c
+    end
+    local function GetCapsuleID(capsuleName)
+        for i, v in pairs(require(game:GetService("ReplicatedStorage").src.Data.Items)) do
+            if string.find(tostring(i), "capsule") then
+                if v["name"] == capsuleName then
+                    return v["id"]
                 end
             end
-            for id, v in pairs(someunits) do
-                if not string.match(id, "_evolved") and not string.match(id, "_marineford") and not string.match(id, "big_test") then
-                    if v["cost"] and v["cost"] ~= 1 then
-                        table.insert(ids, id)
-                    end
-                end
-            end
-        end
-        table.sort(ids, function(a, b) return a:lower() < b:lower() end)
-        return ids
-    end
-end 
-local function CopyUnitsID(mode)
-    local units = {}
-    for i, v in pairs(_G.Config[mode].Units) do
-        table.insert(units, v)
-    end
-    setclipboard(table.concat(units, "\n"))
-end
-local function EquipUnits(mode)
-    game:GetService("ReplicatedStorage").endpoints.client_to_server.unequip_all:InvokeServer()
-    wait()
-    for pos = 1, 6 do
-        if _G.Config[mode].Units["u"..pos] ~= "" then
-            local id = string.split(_G.Config[mode].Units["u"..pos], " ")[3]
-            game:GetService("ReplicatedStorage").endpoints.client_to_server.equip_unit:InvokeServer(id)
-        end
-        wait(0.55)
-    end
-end
-local function UnitsPlaced(UnitID)
-    local Units = 0
-    for i, v in pairs(game:GetService("Workspace")["_UNITS"]:GetChildren()) do
-        if v["_stats"].player.Value == game.Players.LocalPlayer then
-            if v["_stats"].id.Value == UnitID then
-                Units += 1
-            end
         end
     end
-    return Units
-end
-local function GetCapsules()
-    local c = {}
-    for i, v in pairs(require(game:GetService("ReplicatedStorage").src.Data.Items)) do
-        if string.find(tostring(i), "capsule") then
-        table.insert(c, v["name"])
-        end
+    local function GetCapsuleName(capsuleId)
+        local itemsMod = require(game:GetService("ReplicatedStorage").src.Data.Items)
+        return itemsMod[capsuleId]["name"]
     end
-    return c
-end
-local function GetCapsuleID(capsuleName)
-    for i, v in pairs(require(game:GetService("ReplicatedStorage").src.Data.Items)) do
-        if string.find(tostring(i), "capsule") then
-            if v["name"] == capsuleName then
-                return v["id"]
-            end
-        end
-    end
-end
-local function GetCapsuleName(capsuleId)
-    local itemsMod = require(game:GetService("ReplicatedStorage").src.Data.Items)
-    return itemsMod[capsuleId]["name"]
-end
-local function GetItemsForSale()
-    local t = {}
-    local items = require(game:GetService("ReplicatedStorage").src.Data.Items)
-    for i, v in pairs(require(game:GetService("ReplicatedStorage").src.Data.ItemsForSale)) do
-        table.insert(t, items[i]["name"].." - "..i)
-    end
-    table.sort(t, function(a, b) return a:lower() < b:lower() end)
-    return t
-end
-local function GetItem(option, option2)
-    local items = require(game:GetService("ReplicatedStorage").src.Data.Items)
-    if option == "name" then
-        return items[option2]["name"]
-    end
-end
-local function GetMap(get, whats)
-    if get == "all" then
+    local function GetItemsForSale()
         local t = {}
-        for i, v in ipairs(Data.GetAllMaps()) do
-            for id, name in pairs(v) do
-                table.insert(t, name)
-            end
+        local items = require(game:GetService("ReplicatedStorage").src.Data.Items)
+        for i, v in pairs(require(game:GetService("ReplicatedStorage").src.Data.ItemsForSale)) do
+            table.insert(t, items[i]["name"].." - "..i)
         end
+        table.sort(t, function(a, b) return a:lower() < b:lower() end)
         return t
-    elseif get == "name" then
-        for i, v in ipairs(Data.GetAllMaps()) do
-            for id, name in pairs(v) do
-                if id == whats then
-                    return name
+    end
+    local function GetItem(option, option2)
+        local items = require(game:GetService("ReplicatedStorage").src.Data.Items)
+        if option == "name" then
+            return items[option2]["name"]
+        end
+    end
+    local function GetMap(get, whats)
+        if get == "all" then
+            local t = {}
+            for i, v in ipairs(Data.GetAllMaps()) do
+                for id, name in pairs(v) do
+                    table.insert(t, name)
+                end
+            end
+            return t
+        elseif get == "name" then
+            for i, v in ipairs(Data.GetAllMaps()) do
+                for id, name in pairs(v) do
+                    if id == whats then
+                        return name
+                    end
+                end
+            end
+        elseif get == "id" then
+            for i, v in ipairs(Data.GetAllMaps()) do
+                for id, name in pairs(v) do
+                    if name == whats then
+                        return id
+                    end
                 end
             end
         end
-    elseif get == "id" then
-        for i, v in ipairs(Data.GetAllMaps()) do
-            for id, name in pairs(v) do
-                if name == whats then
+    end
+    local function GetLevel(get, whats)
+        local levels = require(game:GetService("ReplicatedStorage").src.Data.Levels)
+        local t = {}
+        if get == "all" then
+            for k, v in pairs(levels) do
+                if string.match(k, whats) and string.match(k, "_level_") then
+                    table.insert(t, v["name"])
+                end
+            end
+            table.sort(t, function(a, s)
+                local a1 = tonumber(string.match(a, "%d+"))
+                local b1 = tonumber(string.match(s, "%d+"))
+                return a1 < b1
+            end)
+            return t
+        elseif get == "id" then
+            for k, v in pairs(levels) do
+                if string.match(k, "_level_") then
+                    if v["name"] == whats then
+                        return k
+                    end
+                end
+            end
+        elseif get == "name" then
+            for k, v in pairs(levels) do
+                if string.match(k, "_level_") then
+                    if k == whats then
+                        return v["name"]
+                    end
+                end
+            end
+        end
+    end
+    local function GetChallenge(o1, o2)
+        local cr = require(game:GetService("ReplicatedStorage").src.Data.ChallengeAndRewards)
+        if o1 == "allnames" then
+            local t = {}
+            for i, v in pairs(cr["challenges"]) do
+                if not table.find(t, v["name"]) then
+                    table.insert(t, v["name"])
+                end
+            end
+            return t
+        elseif o1 == "id" then
+            for id, chg in pairs(cr["challenges"]) do
+                if chg["name"] == o2 then
                     return id
                 end
             end
-        end
-    end
-end
-local function GetLevel(get, whats)
-    local levels = require(game:GetService("ReplicatedStorage").src.Data.Levels)
-    local t = {}
-    if get == "all" then
-        for k, v in pairs(levels) do
-            if string.match(k, whats) and string.match(k, "_level_") then
-                table.insert(t, v["name"])
-            end
-        end
-        table.sort(t, function(a, s)
-            local a1 = tonumber(string.match(a, "%d+"))
-            local b1 = tonumber(string.match(s, "%d+"))
-            return a1 < b1
-        end)
-        return t
-    elseif get == "id" then
-        for k, v in pairs(levels) do
-            if string.match(k, "_level_") then
-                if v["name"] == whats then
-                    return k
-                end
-            end
-        end
-    elseif get == "name" then
-        for k, v in pairs(levels) do
-            if string.match(k, "_level_") then
-                if k == whats then
-                    return v["name"]
+        elseif o1 == "name" then
+            for id, chg in pairs(cr["challenges"]) do
+                if id == o2 then
+                    return chg["name"]
                 end
             end
         end
     end
-end
-local function GetChallenge(o1, o2)
-    local cr = require(game:GetService("ReplicatedStorage").src.Data.ChallengeAndRewards)
-    if o1 == "allnames" then
-        local t = {}
-        for i, v in pairs(cr["challenges"]) do
-            if not table.find(t, v["name"]) then
-                table.insert(t, v["name"])
+    local function GetRewards(o1, o2)
+        local cr = require(game:GetService("ReplicatedStorage").src.Data.ChallengeAndRewards)
+        if o1 == "allnames" then
+            local t = {}
+            for i, v in pairs(cr["rewards"]) do
+                if not table.find(t, v["name"]) then
+                    table.insert(t, v["name"])
+                end
             end
-        end
-        return t
-    elseif o1 == "id" then
-        for id, chg in pairs(cr["challenges"]) do
-            if chg["name"] == o2 then
-                return id
+            return t
+        elseif o1 == "id" then
+            for id, chg in pairs(cr["rewards"]) do
+                if chg["name"] == o2 then
+                    return id
+                end
             end
-        end
-    elseif o1 == "name" then
-        for id, chg in pairs(cr["challenges"]) do
-            if id == o2 then
-                return chg["name"]
-            end
-        end
-    end
-end
-local function GetRewards(o1, o2)
-    local cr = require(game:GetService("ReplicatedStorage").src.Data.ChallengeAndRewards)
-    if o1 == "allnames" then
-        local t = {}
-        for i, v in pairs(cr["rewards"]) do
-            if not table.find(t, v["name"]) then
-                table.insert(t, v["name"])
-            end
-        end
-        return t
-    elseif o1 == "id" then
-        for id, chg in pairs(cr["rewards"]) do
-            if chg["name"] == o2 then
-                return id
-            end
-        end
-    elseif o1 == "name" then
-        for id, chg in pairs(cr["rewards"]) do
-            if id == o2 then
-                return chg["name"]
-            end
-        end
-    end
-end
-local function GetLastRoom()
-    for i, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("InfiniteTowerUI").LevelSelect.InfoFrame.LevelButtons:GetChildren()) do
-        if v.Name == "FloorButton" then
-            if v:FindFirstChild("clear") then
-                if v.clear.Visible == false then
-                    return string.match(v.Main.text.Text, "%d+")
+        elseif o1 == "name" then
+            for id, chg in pairs(cr["rewards"]) do
+                if id == o2 then
+                    return chg["name"]
                 end
             end
         end
     end
-end
-local function GetMission(option, option2)
-    local missions = game:GetService("ReplicatedStorage").endpoints["client_to_server"]["request_mission_quests_data"]:InvokeServer()
-    if option == "id" then
-        for _, v in pairs(missions) do
-            if v["quest_name"] == option2 then
-                return v["id"]
+    local function GetLastRoom()
+        for i, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("InfiniteTowerUI").LevelSelect.InfoFrame.LevelButtons:GetChildren()) do
+            if v.Name == "FloorButton" then
+                if v:FindFirstChild("clear") then
+                    if v.clear.Visible == false then
+                        return string.match(v.Main.text.Text, "%d+")
+                    end
+                end
             end
         end
-    elseif option == "name" then
-        return missions[option2]["quest_name"]
-    elseif option == "desc" then
-        return missions[option2]["quest_desc"]
-    elseif option == "level" then
-        if string.match(option2, "kill") then
-            return "magnolia_infinite"
+    end
+    local function GetMission(option, option2)
+        local missions = game:GetService("ReplicatedStorage").endpoints["client_to_server"]["request_mission_quests_data"]:InvokeServer()
+        if option == "id" then
+            for _, v in pairs(missions) do
+                if v["quest_name"] == option2 then
+                    return v["id"]
+                end
+            end
+        elseif option == "name" then
+            return missions[option2]["quest_name"]
+        elseif option == "desc" then
+            return missions[option2]["quest_desc"]
+        elseif option == "level" then
+            if string.match(option2, "kill") then
+                return "magnolia_infinite"
+            else
+                return missions[option2]["quest_class"]["level_id"]
+            end
+        end
+    end
+    local function GetRaid(option, option2)
+        if option == "all" then
+            local t = {}
+            for i, v in ipairs(Data.GetRaids()) do
+                for id, name in pairs(v) do
+                    table.insert(t, name)
+                end
+            end
+            return t
+        elseif option == "name" then
+            for i, v in ipairs(Data.GetRaids()) do
+                for id, name in pairs(v) do
+                    if id == option2 then
+                        return name
+                    end
+                end
+            end
+        elseif option == "id" then
+            for i, v in ipairs(Data.GetRaids()) do
+                for id, name in pairs(v) do
+                    if name == option2 then
+                        return id
+                    end
+                end
+            end
+        end
+    end
+    local function GetGamemode(id)
+        local gamemode = ""
+        if string.match(id, "_") then
+            split = string.split(id, "_")
+            gamemode = ""
+            for i = 1, #split do
+                if i == 1 then
+                    gamemode = split[i]:sub(1, 1):upper() .."".. split[i]:sub(2) else
+                    gamemode = gamemode .. " " .. split[i]:sub(1, 1):upper() .."".. split[i]:sub(2)
+                end
+            end
         else
-            return missions[option2]["quest_class"]["level_id"]
+            gamemode = string.upper(string.sub(id, 1, 1)) .."".. string.sub(id, 2)
         end
+        return gamemode
     end
-end
-local function GetRaid(option, option2)
-    if option == "all" then
-        local t = {}
-        for i, v in ipairs(Data.GetRaids()) do
-            for id, name in pairs(v) do
-                table.insert(t, name)
-            end
-        end
-        return t
-    elseif option == "name" then
-        for i, v in ipairs(Data.GetRaids()) do
-            for id, name in pairs(v) do
-                if id == option2 then
-                    return name
+    local function GetMaxSpawn(Unit)
+        local max = {
+            u1 = 3,
+            u2 = 6,
+            u3 = 6,
+            u4 = 6,
+            u5 = 6,
+            u6 = 6
+        }
+        return max["u"..Unit]
+    end
+    local function GetSpawnCap(Unit)
+        local Units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
+        return Units[Unit]["spawn_cap"]
+    end
+    local function GetUnit(mode, order)
+        return string.split(_G.Config[mode].Units[order], " ")[1]
+    end
+    local function GetUpgrades(UnitID)
+        local Units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
+        return #Units[UnitID]["upgrade"]
+    end
+    local function IsUpgraded(Unit, Mode)
+        local Units = game:GetService("Workspace")["_UNITS"]:GetChildren()
+        local UnitID = string.split(_G.Config[Mode].Units[Unit], " ")[1]
+        local UnitsUpgraded = 0
+        if _G.Config.Story.ErwinUntilBuff and mode == "Story" then
+            if UnitID == "erwin" then
+                for i, v in next, Units do
+                    if v["_stats"].player.Value == game.Players.LocalPlayer then
+                        if string.match(v._stats.id.Value, "erwin") then
+                            if v._stats.upgrade.Value >= 3 then
+                                UnitsUpgraded += 1
+                            end
+                        end
+                    end
                 end
-            end
-        end
-    elseif option == "id" then
-        for i, v in ipairs(Data.GetRaids()) do
-            for id, name in pairs(v) do
-                if name == option2 then
-                    return id
-                end
-            end
-        end
-    end
-end
-local function GetGamemode(id)
-    local gamemode = ""
-    if string.match(id, "_") then
-        split = string.split(id, "_")
-        gamemode = ""
-        for i = 1, #split do
-            if i == 1 then
-                gamemode = split[i]:sub(1, 1):upper() .."".. split[i]:sub(2) else
-                gamemode = gamemode .. " " .. split[i]:sub(1, 1):upper() .."".. split[i]:sub(2)
-            end
-        end
-    else
-        gamemode = string.upper(string.sub(id, 1, 1)) .."".. string.sub(id, 2)
-    end
-    return gamemode
-end
-local function GetMaxSpawn(Unit)
-    local max = {
-        u1 = 3,
-        u2 = 6,
-        u3 = 6,
-        u4 = 6,
-        u5 = 6,
-        u6 = 6
-    }
-    return max["u"..Unit]
-end
-local function GetSpawnCap(Unit)
-    local Units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
-    return Units[Unit]["spawn_cap"]
-end
-local function GetUnit(mode, order)
-    return string.split(_G.Config[mode].Units[order], " ")[1]
-end
-local function GetUpgrades(UnitID)
-    local Units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
-    return #Units[UnitID]["upgrade"]
-end
-local function IsUpgraded(Unit, Mode)
-    local Units = game:GetService("Workspace")["_UNITS"]:GetChildren()
-    local UnitID = string.split(_G.Config[Mode].Units[Unit], " ")[1]
-    local UnitsUpgraded = 0
-    if _G.Config.Story.ErwinUntilBuff and mode == "Story" then
-        if UnitID == "erwin" then
-            for i, v in next, Units do
-                if v["_stats"].player.Value == game.Players.LocalPlayer then
-                    if string.match(v._stats.id.Value, "erwin") then
-                        if v._stats.upgrade.Value >= 3 then
-                            UnitsUpgraded += 1
+            else
+                for i, v in next, Units do
+                    if v["_stats"].player.Value == game.Players.LocalPlayer then
+                        if string.match(v._stats.id.Value, UnitID) then
+                            if v._stats.upgrade.Value >= GetUpgrades(v._stats.id.Value) then
+                                UnitsUpgraded += 1
+                            end
                         end
                     end
                 end
@@ -706,185 +721,172 @@ local function IsUpgraded(Unit, Mode)
                 end
             end
         end
-    else
-        for i, v in next, Units do
-            if v["_stats"].player.Value == game.Players.LocalPlayer then
-                if string.match(v._stats.id.Value, UnitID) then
-                    if v._stats.upgrade.Value >= GetUpgrades(v._stats.id.Value) then
-                        UnitsUpgraded += 1
-                    end
-                end
+        if UnitsUpgraded > 0 and UnitsPlaced(UnitID) > 0 then
+            if UnitsUpgraded == UnitsPlaced(UnitID) then
+                return true
+            else
+                return false
             end
-        end
-    end
-    if UnitsUpgraded > 0 and UnitsPlaced(UnitID) > 0 then
-        if UnitsUpgraded == UnitsPlaced(UnitID) then
-            return true
         else
             return false
         end
-    else
-        return false
     end
-end
-local function SendWebhook(WebhookData, CanMark)
-    if CanMark and _G.Config.DiscordID ~= "" then
-        _G.DiscordMark = "<@" .. _G.Config.DiscordID .. ">"
-    elseif CanMark then
-        _G.DiscordMark = "@everyone" 
-    else
-        _G.DiscordMark = ""
-    end
-    if _G.Config.WebhookURL ~= "" then
-        WebhookData.content = _G.DiscordMark
-        local request = http_request or request or HttpPost or syn.request
-        local url = _G.Config.WebhookURL
-        local Notifier = {Url = url, Body = game:GetService("HttpService"):JSONEncode(WebhookData), Method = "POST", Headers = {["content-type"] = "application/json"}}
-        request(Notifier)
-    end
-end
-local function AllMissions()
-    local t = {}
-    local missions = game:GetService("ReplicatedStorage").endpoints["client_to_server"]["request_mission_quests_data"]:InvokeServer()
-    for i, v in pairs(missions) do
-        table.insert(t, v["quest_name"])
-    end
-    return t
-end
-local function Search(op, texttofilter, unittype, ingame)
-    if op == "itemsforsale" then
-        local t = {}
-        for i, v in pairs(GetItemsForSale()) do
-            if string.match(string.lower(v), string.lower(texttofilter)) then
-                table.insert(t, v)
-            end
-        end
-        table.sort(t, function(a, b) return a:lower() < b:lower() end)
-        return t
-    elseif op == "unitsid" then
-        ingame = ingame or false
-        local t = {}
-        if ingame then
-            for i, v in pairs(_G.Config.Collection[unittype]) do
-                local name = string.split(v, " ")[1]
-                if string.match(string.lower(name), string.lower(texttofilter)) then
-                    table.insert(t, v)
-                end
-            end
+    local function SendWebhook(WebhookData, CanMark)
+        if CanMark and _G.Config.DiscordID ~= "" then
+            _G.DiscordMark = "<@" .. _G.Config.DiscordID .. ">"
+        elseif CanMark then
+            _G.DiscordMark = "@everyone" 
         else
-            for i, v in pairs(GetUnitsID(unittype)) do
-                local name = string.split(v, " ")[1]
-                if string.match(string.lower(name), string.lower(texttofilter)) then
+            _G.DiscordMark = ""
+        end
+        if _G.Config.WebhookURL ~= "" then
+            WebhookData.content = _G.DiscordMark
+            local request = http_request or request or HttpPost or syn.request
+            local url = _G.Config.WebhookURL
+            local Notifier = {Url = url, Body = game:GetService("HttpService"):JSONEncode(WebhookData), Method = "POST", Headers = {["content-type"] = "application/json"}}
+            request(Notifier)
+        end
+    end
+    local function AllMissions()
+        local t = {}
+        local missions = game:GetService("ReplicatedStorage").endpoints["client_to_server"]["request_mission_quests_data"]:InvokeServer()
+        for i, v in pairs(missions) do
+            table.insert(t, v["quest_name"])
+        end
+        return t
+    end
+    local function Search(op, texttofilter, unittype, ingame)
+        if op == "itemsforsale" then
+            local t = {}
+            for i, v in pairs(GetItemsForSale()) do
+                if string.match(string.lower(v), string.lower(texttofilter)) then
                     table.insert(t, v)
                 end
             end
-        end
-        table.sort(t, function(a, b) return a:lower() < b:lower() end)
-        return t
-    elseif op == "allgameunits" then
-        local t = {}
-        local someunits = {}
-        for v2, v3 in pairs(game:GetService("ReplicatedStorage").src.Data.Units:GetDescendants()) do
-            if v3:IsA("ModuleScript") and v3.Name ~= "UnitPresets" and not string.match(v3.Name, "_PVE") and not string.match(v3.Name, "Raid") and not string.match(v3.Name, "_Leaderboard") then
-                for v4, v5 in pairs(require(v3)) do
-                    someunits[v4] = v5
+            table.sort(t, function(a, b) return a:lower() < b:lower() end)
+            return t
+        elseif op == "unitsid" then
+            ingame = ingame or false
+            local t = {}
+            if ingame then
+                for i, v in pairs(_G.Config.Collection[unittype]) do
+                    local name = string.split(v, " ")[1]
+                    if string.match(string.lower(name), string.lower(texttofilter)) then
+                        table.insert(t, v)
+                    end
                 end
-            end
-        end
-        for id, v in pairs(someunits) do
-            if not string.match(id, "_evolved") and not string.match(id, "_marineford") and not string.match(id, "big_test") then
-                if v["cost"] and v["cost"] ~= 1 then
-                    if string.match(string.lower(id), string.lower(texttofilter)) then
-                        table.insert(t, id)
+            else
+                for i, v in pairs(GetUnitsID(unittype)) do
+                    local name = string.split(v, " ")[1]
+                    if string.match(string.lower(name), string.lower(texttofilter)) then
+                        table.insert(t, v)
                     end
                 end
             end
-        end
-        table.sort(t, function(a, b) return a:lower() < b:lower() end)
-        return t
-    end
-end
-local function SaveCollection()
-    pcall(function()
-        _G.Config.Collection.Money = GetUnitsID("money")
-        _G.Config.Collection.All = GetUnitsID("all")
-        SaveConfig()
-    end)
-end
-local function HasItem(ItemID, ReturnType, Amount)
-    if game:GetService("Players").LocalPlayer.PlayerGui.items.grid.List.Outer.ItemFrames:FindFirstChild(ItemID) then
-        local ItemAmount = tonumber(game:GetService("Players").LocalPlayer.PlayerGui.items.grid.List.Outer.ItemFrames[ItemID].OwnedAmount.Text:match("%d+"))
-        if ReturnType == ">" then
-            if ItemAmount >= Amount then
-                return true
-            else
-                return false
-            end
-        elseif ReturnType == "<" then
-            if ItemAmount <= Amount then
-                return true
-            else
-                return false
-            end
-        end
-    elseif ReturnType == "<" then
-        return true
-    elseif ReturnType == ">" then
-        return false
-    end
-end
-local function SilentExecution()
-    if _G.Config.SilentExec then
-        while wait() do
-            if game:GetService("CoreGui"):FindFirstChild(hubname) then
-                if not game:GetService("CoreGui")[hubname].Enabled then break end
-                if game:GetService("CoreGui")[hubname].Enabled then
-                    game:GetService("CoreGui")[hubname].Enabled = false
+            table.sort(t, function(a, b) return a:lower() < b:lower() end)
+            return t
+        elseif op == "allgameunits" then
+            local t = {}
+            local someunits = {}
+            for v2, v3 in pairs(game:GetService("ReplicatedStorage").src.Data.Units:GetDescendants()) do
+                if v3:IsA("ModuleScript") and v3.Name ~= "UnitPresets" and not string.match(v3.Name, "_PVE") and not string.match(v3.Name, "Raid") and not string.match(v3.Name, "_Leaderboard") then
+                    for v4, v5 in pairs(require(v3)) do
+                        someunits[v4] = v5
+                    end
                 end
             end
-        end
-    end
-end
-local function RemoveErrors()
-    while wait() do
-        pcall(function()
-            if game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") and game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("MessageGui") then
-                game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("MessageGui")["message_templates"].Error.Visible = false
-            end
-        end)
-    end
-end
-local function HideLeaderboard()
-    while wait() do
-        pcall(function()
-            if game:GetService('StarterGui') then
-                if _G.Config.HideLeaderboard then
-                    game:GetService('StarterGui'):SetCoreGuiEnabled(0, false) else
-                    game:GetService('StarterGui'):SetCoreGuiEnabled(0, true)
-                end
-            end
-        end)
-    end
-end
-local function HideName()
-    while wait() do
-        pcall(function()
-            if _G.Config.HideName then
-                if game.Players.LocalPlayer.Character then
-                    if game.Players.LocalPlayer.Character:FindFirstChild("Head") then
-                        for _, v in pairs(game.Players.LocalPlayer.Character.Head:GetChildren()) do
-                            if v.Name == "_overhead" then
-                                v:Destroy()
-                            end
+            for id, v in pairs(someunits) do
+                if not string.match(id, "_evolved") and not string.match(id, "_marineford") and not string.match(id, "big_test") then
+                    if v["cost"] and v["cost"] ~= 1 then
+                        if string.match(string.lower(id), string.lower(texttofilter)) then
+                            table.insert(t, id)
                         end
                     end
                 end
             end
+            table.sort(t, function(a, b) return a:lower() < b:lower() end)
+            return t
+        end
+    end
+    local function SaveCollection()
+        pcall(function()
+            _G.Config.Collection.Money = GetUnitsID("money")
+            _G.Config.Collection.All = GetUnitsID("all")
+            SaveConfig()
         end)
     end
-end
-
-if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Whitelist.lua"))(), game.Players.LocalPlayer.UserId) then
+    local function HasItem(ItemID, ReturnType, Amount)
+        if game:GetService("Players").LocalPlayer.PlayerGui.items.grid.List.Outer.ItemFrames:FindFirstChild(ItemID) then
+            local ItemAmount = tonumber(game:GetService("Players").LocalPlayer.PlayerGui.items.grid.List.Outer.ItemFrames[ItemID].OwnedAmount.Text:match("%d+"))
+            if ReturnType == ">" then
+                if ItemAmount >= Amount then
+                    return true
+                else
+                    return false
+                end
+            elseif ReturnType == "<" then
+                if ItemAmount <= Amount then
+                    return true
+                else
+                    return false
+                end
+            end
+        elseif ReturnType == "<" then
+            return true
+        elseif ReturnType == ">" then
+            return false
+        end
+    end
+    local function SilentExecution()
+        if _G.Config.SilentExec then
+            while wait() do
+                if game:GetService("CoreGui"):FindFirstChild(hubname) then
+                    if not game:GetService("CoreGui")[hubname].Enabled then break end
+                    if game:GetService("CoreGui")[hubname].Enabled then
+                        game:GetService("CoreGui")[hubname].Enabled = false
+                    end
+                end
+            end
+        end
+    end
+    local function RemoveErrors()
+        while wait() do
+            pcall(function()
+                if game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") and game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("MessageGui") then
+                    game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("MessageGui")["message_templates"].Error.Visible = false
+                end
+            end)
+        end
+    end
+    local function HideLeaderboard()
+        while wait() do
+            pcall(function()
+                if game:GetService('StarterGui') then
+                    if _G.Config.HideLeaderboard then
+                        game:GetService('StarterGui'):SetCoreGuiEnabled(0, false) else
+                        game:GetService('StarterGui'):SetCoreGuiEnabled(0, true)
+                    end
+                end
+            end)
+        end
+    end
+    local function HideName()
+        while wait() do
+            pcall(function()
+                if _G.Config.HideName then
+                    if game.Players.LocalPlayer.Character then
+                        if game.Players.LocalPlayer.Character:FindFirstChild("Head") then
+                            for _, v in pairs(game.Players.LocalPlayer.Character.Head:GetChildren()) do
+                                if v.Name == "_overhead" then
+                                    v:Destroy()
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
 
     if InLobby() and not game:GetService("CoreGui"):FindFirstChild(hubname) then
         task.wait(5)
@@ -1839,33 +1841,30 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             local RaidSent = false
 
             local function BuyItem()
-                while wait() do
-                    pcall(function()
-                        if _G.Config.BuyItem then
-                            if game:GetService("Workspace")["travelling_merchant"]["is_open"].Value == true then
-                                for _, v in pairs(game:GetService("Workspace")["travelling_merchant"].stand.items:GetChildren()) do
-                                    itemName = string.gsub(v.Name, "%d", "")
-                                    if table.find(_G.Config.ItemsToBuy, itemName) then
-                                        game:GetService("ReplicatedStorage").endpoints.client_to_server.buy_travelling_merchant_item:InvokeServer(v.Name)
-                                        if _G.Config.Notify["Purchased Items"] then
-                                            local Data = {
-                                                ["username"] = "Mazter Notifier",
-                                                ["avatar_url"] = "https://i.imgur.com/C3ANp9d.jpg",
-                                                ["content"] = "",
-                                                ["embeds"] = {{
-                                                    ["title"] = "Purchased Item",
-                                                    ["description"] = "<a:yellowsino_ILD:748565200499638353> ".. GetItem("name", itemName),
-                                                    ["type"] = "rich",
-                                                    ["color"] = tonumber(0xedce00)
-                                                }}
-                                            }
-                                            SendWebhook(Data, _G.Config.Mention)
-                                        end
-                                    end
+                if _G.Config.BuyItem then
+                    if game:GetService("Workspace")["travelling_merchant"]["is_open"].Value == true then
+                        for _, v in pairs(game:GetService("Workspace")["travelling_merchant"].stand.items:GetChildren()) do
+                            itemName = string.gsub(v.Name, "%d", "")
+                            if table.find(_G.Config.ItemsToBuy, itemName) then
+                                game:GetService("ReplicatedStorage").endpoints.client_to_server.buy_travelling_merchant_item:InvokeServer(v.Name)
+                                task.wait(1)
+                                if _G.Config.Notify["Purchased Items"] then
+                                    local Data = {
+                                        ["username"] = "Mazter Notifier",
+                                        ["avatar_url"] = "https://i.imgur.com/C3ANp9d.jpg",
+                                        ["content"] = "",
+                                        ["embeds"] = {{
+                                            ["title"] = "Purchased Item",
+                                            ["description"] = "<a:yellowsino_ILD:748565200499638353> ".. GetItem("name", itemName),
+                                            ["type"] = "rich",
+                                            ["color"] = tonumber(0xedce00)
+                                        }}
+                                    }
+                                    SendWebhook(Data, _G.Config.Mention)
                                 end
                             end
                         end
-                    end)
+                    end
                 end
             end
             local function OpenCapsules()
@@ -2283,7 +2282,6 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end)
             end
 
-            task.spawn(BuyItem)
             task.spawn(OpenCapsules)
 
             spawn(function()
@@ -2297,6 +2295,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             spawn(function()
                 while wait() do
                     pcall(function()
+                        BuyItem()
                         DailyRewards()
                         AcceptQuest()
                     end)
