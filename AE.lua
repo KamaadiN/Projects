@@ -13,6 +13,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         Farm = {
             Enabled = false,
             KillMob = false,
+            Range = "Low [No Lag]",
             Mob = "Luffe",
             Area = "Ooy Piece",
             Areas = {}
@@ -25,6 +26,10 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             Enabled = false,
             Multiplier = "x2",
         },
+        Test = {
+            Enabled = false,
+            Name = "hero"
+        },
 
         Bosses = false,
         Click = false,
@@ -33,22 +38,24 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         Aura = false,
         Weapon = false,
 
-        Gamepasses = {
-            ["Teleport"] = false,
-            ["Auto Click"] = false,
-            ["Magnet"] = false,
-            ["Fast Open"] = false
-        },
+        Fuse = false,
+        FightersToFuse = {},
 
         OpenFighter = false,
         TripleOpen = false,
         MapToOpen = "Ooy Piece",
         UnitsToDelete = {},
 
+        EquipBest = false,
+        EquipDelay = 10,
+
+        UseSkills = false,
+        Skills = {},
         UseBoosts = false,
         Boosts = {},
 
         HideName = false,
+        HideRank = false,
         ClaimGifts = false,
 
         AlwaysSet = true,
@@ -56,7 +63,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         JumpPower = 50,
         Keybind = "Enum.KeyCode.RightAlt",
 
-        ConfigChanges = 1.4444
+        ConfigChanges = 1.5
     }
 
     local hubname = " MAZTER HUB - Anime Evolution"
@@ -189,7 +196,14 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             "5MVISITS",
             "25KFAVS",
             "12KLIKES",
-            "15KLIKES"
+            "15KLIKES",
+            "20KLIKES",
+            "25KLIKES",
+            "30KLIKES",
+            "8MVISITS",
+            "10MVISITS",
+            "35KFAVS",
+            "50KFAVS"
         }
         for _, v in pairs(codes) do
             game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"Codes", v})
@@ -285,6 +299,15 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end
             end
             return t
+        elseif GetType == "all" then
+            local t = {}
+            local fgt = require(game:GetService("ReplicatedStorage").Modules.Fighters)
+            for k, v in pairs(fgt) do
+                if not table.find(t, k) then
+                    table.insert(t, k)
+                end
+            end
+            return t
         end
     end
     local function GetDefenses()
@@ -309,7 +332,7 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             table.sort(t, function(a, b)
                 local v1 = tonumber(string.match(a, "%d+"))
                 local v2 = tonumber(string.match(b, "%d+"))
-                return v1 < v2
+                return v1 > v2
             end)
             return t
         else
@@ -363,12 +386,99 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             end
         end
     end
+    local function GetSkill(Op1, Op2)
+        local skills = require(game:GetService("ReplicatedStorage").Modules.Skill)
+        if Op1 == "name" then
+            return skills[Op2]["Nome"]
+        elseif Op1 == "id" then
+            for i, v in pairs(skills) do
+                if v["Nome"] == Op2 then
+                    return i
+                end
+            end
+        elseif Op1 == "all" then
+            local t = {}
+            for i, v in ipairs(skills) do
+                table.insert(t, v["Nome"])
+            end
+            return t
+        end
+    end
+    local function GetTest(option)
+        local tests = {
+            "Hero",
+            "Magic Knight"
+        }
+        if option[1] == "all" then
+            return tests
+        end
+        if option[1] == "name" then
+            for i, v in pairs(tests) do
+                if string.lower(string.split(v, " ")[1]) == option[2] then
+                    return v
+                end
+            end
+        end
+        if option[1] == "hero" then
+            if option[2] == "loc" then
+                return game:GetService("Workspace")["Hero Test"].CFrame
+            end
+            if option[2] == "actived" then
+                return game:GetService("ReplicatedStorage").HEROTEST.HEROTEST.Value
+            end
+        end
+        if option[1] == "magic" then
+            if option[2] == "loc" then
+                return game:GetService("Workspace")["Magic Knight Test"].CFrame
+            end
+            if option[2] == "actived" then
+                return game:GetService("ReplicatedStorage").MAGICTEST.MAGICTEST.Value
+            end
+        end
+    end
+    local function Search(op, texttofilter)
+        local t = {}
+        if op == "all" then
+            for i, v in pairs(GetFighters("all")) do
+                if string.match(string.lower(v), string.lower(texttofilter)) then
+                    table.insert(t, v)
+                end
+            end
+        end
+        table.sort(t, function(a, b) return a:lower() < b:lower() end)
+        return t
+    end
     local function HasBoost(BoostName)
         for _, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.UI.BoostsFrame:GetChildren()) do
             if v:IsA("ImageLabel") and string.match(v.Name, BoostName) then
                 return v.Visible
             end
         end
+    end
+    local function CanFuse(Fighter)
+        if Fighter.Frame.ImageColor3 == Color3.fromRGB(47, 193, 31) then
+            return false
+        else
+            return true
+        end
+    end
+    local function GetFightersToFuse(FighterName)
+        local t = {}
+        local a = 0
+        for i, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.UI.CenterFrame.Backpack.Frame:GetChildren()) do
+            if v:IsA("ImageLabel") and v.Frame.ViewportFrame:FindFirstChildWhichIsA("Model").Name == FighterName and CanFuse(v) and a < 10 then
+                t[v.Name] = true
+                a += 1
+            end
+        end
+        if a == 10 then
+            return t
+        else
+            return {}
+        end
+    end
+    local function Fusion(Fighters)
+        game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"Fuse", Fighters})
     end
 
     OldNameCall = hookmetamethod(game, "__namecall", function(Self, ...)
@@ -385,15 +495,15 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         local UI = Material.Load({
             Title = hubname,
             Style = 1,
-            SizeX = 350,
+            SizeX = 550,
             SizeY = 400,
             Theme = "VeryDark",
         })
         local MainPg = UI.New({
             Title = "MAIN"
         })
-        local GpPg = UI.New({
-            Title = "Gamepasses"
+        local FgtPg = UI.New({
+            Title = "FIGHTERS"
         })
         local UiPg = UI.New({
             Title = "UI"
@@ -419,6 +529,17 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                     SaveConfig()
                 end,
                 Enabled = _G.Config.Farm.KillMob
+            })
+            _G.RangeDD = MainPg.Dropdown({
+                Text = "Kill Aura Range",
+                Callback = function(v)
+                    _G.Config.Farm.Range = v
+                    SaveConfig()
+                end,
+                Options = {
+                    "High [Very Lag]",
+                    "Low [No Lag]"
+                }
             })
             _G.AreasDD = MainPg.Dropdown({
                 Text = "Area",
@@ -447,6 +568,18 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                     SaveConfig()
                 end,
                 Options = GetFighters("mobs", _G.Config.Farm.Area)
+            })
+            MainPg.Button({
+                Text = "Set Current Area",
+                Callback = function()
+                    pcall(function()
+                        local Service = require(game:GetService("Players").LocalPlayer.PlayerGui.UI.Client.Services)
+                        _G.Config.Farm.Area = tostring(Service.CurrentArea)
+                        _G.Config.Farm.Mob = ""
+                        _G.MobsDD:SetOptions(GetFighters("mobs", tostring(Service.CurrentArea)))
+                        SaveConfig()
+                    end)
+                end
             })
             MainPg.Toggle({
                 Text = "Auto Defense",
@@ -479,6 +612,22 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                     SaveConfig()
                 end,
                 Options = GetPowerArea("all")
+            })
+            MainPg.Toggle({
+                Text = "Auto Test",
+                Callback = function(v)
+                    _G.Config.Test.Enabled = v
+                    SaveConfig()
+                end,
+                Enabled = _G.Config.Test.Enabled
+            })
+            _G.TestDD = MainPg.Dropdown({
+                Text = "Select Test",
+                Callback = function(v)
+                    _G.Config.Test.Name = string.lower(string.split(v, " ")[1])
+                    SaveConfig()
+                end,
+                Options = GetTest({"all"})
             })
             MainPg.Toggle({
                 Text = "Auto Skill Bosses",
@@ -528,36 +677,101 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end,
                 Enabled = _G.Config.Weapon
             })
-            
-        -- GAMEPASSES
 
-            for k, value in pairs(_G.Config.Gamepasses) do
-                GpPg.Toggle({
-                    Text = k,
-                    Callback = function(v)
-                        _G.Config.Gamepasses[k] = v
+        -- FIGHTERS
+
+            FgtPg.Toggle({
+                Text = "Auto Open Fighters",
+                Callback = function(v)
+                    _G.Config.OpenFighter = v
+                    SaveConfig()
+                end,
+                Enabled = _G.Config.OpenFighter
+            })
+            FgtPg.Toggle({
+                Text = "Triple Open Fighters",
+                Callback = function(v)
+                    _G.Config.TripleOpen = v
+                    SaveConfig()
+                end,
+                Enabled = _G.Config.TripleOpen
+            })
+            FgtPg.Button({
+                Text = "Set Current Map",
+                Callback = function()
+                    pcall(function()
+                        local Service = require(game:GetService("Players").LocalPlayer.PlayerGui.UI.Client.Services)
+                        _G.Config.MapToOpen = tostring(Service.CurrentArea)
+                        _G.Config.UnitsToDelete = {}
+                        _G.DeleteUnitsDD:SetOptions(GetFighters("fighterspoint", tostring(Service.CurrentArea)))
                         SaveConfig()
-                    end,
-                    Enabled = _G.Config.Gamepasses[k]
-                })
-            end
+                    end)
+                end
+            })
+            _G.FightersPointDD = FgtPg.Dropdown({
+                Text = "Map To Open",
+                Callback = function(v)
+                    _G.Config.MapToOpen = v
+                    _G.Config.UnitsToDelete = {}
+                    _G.DeleteUnitsDD:SetOptions(GetFighters("fighterspoint", _G.Config.MapToOpen))
+                    SaveConfig()
+                end,
+                Options = GetAreas("farm")
+            })
+            _G.DeleteUnitsDD = FgtPg.Dropdown({
+                Text = "Delete Units",
+                Callback = function(v)
+                    if _G.Config.UnitsToDelete[v] then
+                        _G.Config.UnitsToDelete[v] = false
+                    else
+                        _G.Config.UnitsToDelete[v] = true
+                    end
+                    for i, v in pairs(_G.Config.UnitsToDelete) do
+                        print(i,v)
+                    end
+                    SaveConfig()
+                end,
+                Options = GetFighters("fighterspoint", _G.Config.MapToOpen)
+            })
+            FgtPg.Toggle({
+                Text = "Auto Fuse",
+                Callback = function(v)
+                    _G.Config.Fuse = v
+                    SaveConfig()
+                end,
+                Enabled = _G.Config.Fuse
+            })
+            FgtPg.TextField({
+                Text = "Search Fighter",
+                Callback = function(v)
+                    _G.FuseDD:SetOptions(Search("all", v))
+                end
+            })
+            _G.FuseDD = FgtPg.Dropdown({
+                Text = "Fighters To Fuse",
+                Callback = function(op)
+                    if not table.find(_G.Config.FightersToFuse, op) then
+                        table.insert(_G.Config.FightersToFuse, op)
+                    else
+                        table.remove(_G.Config.FightersToFuse, table.find(_G.Config.FightersToFuse, op))
+                    end
+                    SaveConfig()
+                end,
+                Options = GetFighters("all")
+            })
 
         -- UI
 
             local UIS = {
                 "Fuse",
                 "Rank Up",
-                "Stats",
                 "Avatars",
                 "Auras",
-                "System",
                 "Passive",
                 "Artifacts",
                 "Exchange",
                 "Grimoires",
-                "Backpack",
-                "Weapons",
-                "Settings"
+                "Weapons"
             }
             table.sort(UIS, function(a, b) return a:lower() < b:lower() end)
 
@@ -601,49 +815,45 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                     end
                 end
             })
-            
-            MiscPg.Toggle({
-                Text = "Auto Open Fighters",
-                Callback = function(v)
-                    _G.Config.OpenFighter = v
-                    SaveConfig()
-                end,
-                Enabled = _G.Config.OpenFighter
-            })
-            MiscPg.Toggle({
-                Text = "Triple Open Fighters",
-                Callback = function(v)
-                    _G.Config.TripleOpen = v
-                    SaveConfig()
-                end,
-                Enabled = _G.Config.TripleOpen
-            })
-            _G.FightersPointDD = MiscPg.Dropdown({
-                Text = "Map To Open",
-                Callback = function(v)
-                    _G.Config.MapToOpen = v
-                    _G.Config.UnitsToDelete = {}
-                    _G.DeleteUnitsDD:SetOptions(GetFighters("fighterspoint", _G.Config.MapToOpen))
-                    SaveConfig()
-                end,
-                Options = GetAreas("farm")
-            })
-            _G.DeleteUnitsDD = MiscPg.Dropdown({
-                Text = "Delete Units",
-                Callback = function(v)
-                    if _G.Config.UnitsToDelete[v] then
-                        _G.Config.UnitsToDelete[v] = false
-                    else
-                        _G.Config.UnitsToDelete[v] = true
-                    end
-                    for i, v in pairs(_G.Config.UnitsToDelete) do
-                        print(i,v)
-                    end
-                    SaveConfig()
-                end,
-                Options = GetFighters("fighterspoint", _G.Config.MapToOpen)
-            })
 
+            MiscPg.Toggle({
+                Text = "Auto Equip Best",
+                Callback = function(v)
+                    _G.Config.EquipBest = v
+                    SaveConfig()
+                end,
+                Enabled = _G.Config.EquipBest
+            })
+            MiscPg.Slider({
+                Text = "Equip Delay [In Seconds]",
+                Callback = function(v)
+                    _G.Config.EquipDelay= v
+                    SaveConfig()
+                end,
+                Min = 10,
+                Max = 30,
+                Def = _G.Config.EquipDelay
+            })
+            MiscPg.Toggle({
+                Text = "Auto Use Skills",
+                Callback = function(v)
+                    _G.Config.UseSkills = v
+                    SaveConfig()
+                end,
+                Enabled = _G.Config.UseSkills
+            })
+            _G.SkillsDD = MiscPg.Dropdown({
+                Text = "Select Skills",
+                Callback = function(v)
+                    if not table.find(_G.Config.Skills, v) then
+                        table.insert(_G.Config.Skills, v)
+                    else
+                        table.remove(_G.Config.Skills, table.find(_G.Config.Skills, v))
+                    end
+                    SaveConfig()
+                end,
+                Options = GetSkill("all")
+            })
             MiscPg.Toggle({
                 Text = "Auto Use Boosts",
                 Callback = function(v)
@@ -711,13 +921,21 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end,
                 Enabled = _G.Config.HideName
             })
+            MiscPg.Toggle({
+                Text = "Hide Rank",
+                Callback = function(v)
+                    _G.Config.HideRank = v
+                    SaveConfig()
+                end,
+                Enabled = _G.Config.HideRank
+            })
 
     -- MAIN FUNCTIONS
 
         function CheckBody()
             while wait() do
                 pcall(function()
-                    if _G.Config.OpenFighter or _G.Config.PowerArea.Enabled then
+                    if _G.Config.OpenFighter or _G.Config.PowerArea.Enabled or GetTest({_G.Config.Test.Name, "actived"}) then
                         if game.Players.LocalPlayer.Character then
                             if not game.Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("Body") then
                                 Body("create", "Velocity", "Body", game.Players.LocalPlayer.Character.HumanoidRootPart)
@@ -768,8 +986,18 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         function PowerArea()
             while wait() do
                 pcall(function()
-                    if _G.Config.PowerArea.Enabled then
+                    if _G.Config.PowerArea.Enabled and (not _G.Config.Test.Enabled or _G.Config.Test.Enabled and not GetTest({_G.Config.Test.Name, "actived"})) then
                         TeleportTo(GetPowerArea(_G.Config.PowerArea.Multiplier).CFrame + Vector3.new(10,3,0))
+                        Click("train")
+                    end
+                end)
+            end
+        end
+        function Test()
+            while wait() do
+                pcall(function()
+                    if _G.Config.Test.Enabled and GetTest({_G.Config.Test.Name, "actived"}) and not _G.Config.OpenFighter then
+                        TeleportTo(GetTest({_G.Config.Test.Name, "loc"}) + Vector3.new(0, -5, 10))
                         Click("train")
                     end
                 end)
@@ -842,12 +1070,13 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end)
             end
         end
-        function Gamepasses()
+        function Fuse()
             while wait() do
                 pcall(function()
-                    local Service = require(game:GetService("Players").LocalPlayer.PlayerGui.UI.Client.Services)
-                    for k, v in pairs(_G.Config.Gamepasses) do
-                        Service.PlayerData.Gamepasses[k] = v
+                    if _G.Config.Fuse and #_G.Config.FightersToFuse > 0 then
+                        for i, v in pairs(_G.Config.FightersToFuse) do
+                            Fusion(GetFightersToFuse(v))
+                        end
                     end
                 end)
             end
@@ -859,6 +1088,43 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                         TeleportTo(game.Workspace.__WORKSPACE.FightersPoint[_G.Config.MapToOpen].CF.CFrame + Vector3.new(8,3,0))
                         OpenType = "E" if _G.Config.TripleOpen then OpenType = "R" end
                         game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"BuyTier", workspace.__WORKSPACE.FightersPoint:FindFirstChild(_G.Config.MapToOpen), OpenType, _G.Config.UnitsToDelete})
+                    end
+                end)
+            end
+        end
+        function EquipBest()
+            while wait(_G.Config.EquipDelay) do
+                pcall(function()
+                    if _G.Config.EquipBest then
+                        local svc = require(game:GetService("Players").LocalPlayer.PlayerGui.UI.Client.Services)
+                        local fgt = require(game:GetService("ReplicatedStorage").Modules.Fighters)
+                        local fighters = {}
+                        svc.CallEvent:Fire({"FighterRefesh"})
+                        for i, v in pairs(svc.PlayerData.Fighters) do
+                            if v["Equipped"] then
+                                game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"EquipFighter", v["ID"], "FastMode"})
+                            end
+                            table.insert(fighters, {v["FuseBoost"] or fgt[v["Name"]]["Power"], v["ID"]})
+                        end
+                        table.sort(fighters, function(p10, p11)
+                            return p11[1] < p10[1]
+                        end)
+                        local MaxEquip = tonumber(string.match(string.match(game:GetService("Players").LocalPlayer.PlayerGui.UI.CenterFrame.Backpack.MaxEquip.TextLabel.Text, "/%d+"), "%d+"))
+                        if MaxEquip > #fighters then MaxEquip = #fighters end
+                        for i = 1, MaxEquip do
+                            game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"EquipFighter", fighters[i][2], true})
+                        end
+                    end
+                end)
+            end
+        end
+        function UseSkills()
+            while wait() do
+                pcall(function()
+                    if _G.Config.UseSkills then
+                        for i, v in pairs(_G.Config.Skills) do
+                            game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"SkillUse", GetSkill("id", v)})
+                        end
                     end
                 end)
             end
@@ -880,8 +1146,17 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
             while wait() do
                 pcall(function()
                     if _G.Config.HideName then
-                        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Head") and game.Players.LocalPlayer.Character.Head:FindFirstChild("HUD") then
-                            game.Players.LocalPlayer.Character.Head:FindFirstChild("HUD"):Destroy()
+                        game.Players.LocalPlayer.Character.Head.HUD.Frame.PlayerName:Destroy()
+                    end
+                end)
+            end
+        end
+        function HideRank()
+            while wait() do
+                pcall(function()
+                    if _G.Config.HideRank then
+                        if game.Players.LocalPlayer.Character.Head.HUD.Frame.RankName then
+                            game.Players.LocalPlayer.Character.Head.HUD.Frame.RankName:Destroy()
                         end
                     end
                 end)
@@ -898,18 +1173,22 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
                 end)
             end
         end
-        function MaxDistance()
+        function Settings()
             while wait() do
                 pcall(function()
-                    game:GetService("Players").LocalPlayer.PlayerGui.UI.CenterFrame.Settings.Frame.MaxDistance.Frame.TextBox.Text = 100000
-                end)
-            end
-        end
-        function RemoveErrors()
-            while wait() do
-                pcall(function()
-                    if game:GetService("Players").LocalPlayer.PlayerGui and game:GetService("Players").LocalPlayer.PlayerGui.UI then
+                    local delay;
+                    if _G.Config.Farm.Range == "High [Very Lag]" then delay = 100000 else delay = 400 end
+                    if game:GetService("Players").LocalPlayer.PlayerGui.UI.CenterFrame.Settings.Frame.MaxDistance.Frame.TextBox.Text ~= delay then
+                        game:GetService("Players").LocalPlayer.PlayerGui.UI.CenterFrame.Settings.Frame.MaxDistance.Frame.TextBox.Text = delay
+                    end
+                    if game:GetService("Players").LocalPlayer.PlayerGui.UI.Error.Visible then
                         game:GetService("Players").LocalPlayer.PlayerGui.UI.Error.Visible = false
+                    end
+                    if game:GetService("Workspace")["__ANIMATION"].Camera then
+                        game:GetService("Workspace")["__ANIMATION"].Camera:Destroy()
+                    end
+                    if game:GetService("Players").LocalPlayer.PlayerGui.Animation then
+                        game:GetService("Players").LocalPlayer.PlayerGui.Animation:Destroy()
                     end
                 end)
             end
@@ -919,80 +1198,120 @@ if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/Kamaadi
         task.spawn(Farm)
         task.spawn(Defense)
         task.spawn(PowerArea)
+        task.spawn(Test)
         task.spawn(SkillBosses)
         task.spawn(Clicker)
         task.spawn(Collect)
         task.spawn(Rankup)
         task.spawn(Aura)
         task.spawn(Weapon)
-        task.spawn(Gamepasses)
+        task.spawn(Fuse)
         task.spawn(OpenFighter)
+        task.spawn(EquipBest)
+        task.spawn(UseSkills)
         task.spawn(UseBoosts)
         task.spawn(HideName)
+        task.spawn(HideRank)
         task.spawn(ClaimGifts)
-        task.spawn(MaxDistance)
-        task.spawn(RemoveErrors)
+        task.spawn(Settings)
 
     -- MAIN SERVICES
 
         game:GetService("RunService").RenderStepped:Connect(function()
 
-            if _G.Config.Farm.KillMob then
-                _G.AreasDD:SetText("Area Selected: ".. _G.Config.Farm.Area)
-            elseif not _G.Config.Farm.KillMob then
-                if #_G.Config.Farm.Areas > 0 then
-                    _G.AreasDD:SetText("Areas Selected: ".. table.concat(_G.Config.Farm.Areas, ", ")) else
-                    _G.AreasDD:SetText("Select Area")
+            do -- MAIN
+
+                if _G.Config.Farm.KillMob then
+                    _G.AreasDD:SetText("Area Selected: ".. _G.Config.Farm.Area)
+                elseif not _G.Config.Farm.KillMob then
+                    if #_G.Config.Farm.Areas > 0 then
+                        _G.AreasDD:SetText("Areas Selected: ".. table.concat(_G.Config.Farm.Areas, ", ")) else
+                        _G.AreasDD:SetText("Select Area")
+                    end
                 end
-            end
-
-            if _G.Config.Farm.Mob ~= "" then
-                _G.MobsDD:SetText("Mob Selected: ".. _G.Config.Farm.Mob) else
-                _G.MobsDD:SetText("Select Mob")
-            end
-            _G.DefenseDD:SetText("Defense Selected: ".. _G.Config.Defense.ID)
-
-            _G.PowerAreaDD:SetText("Power Area Selected: ".. _G.Config.PowerArea.Multiplier)
-
-            local gt = math.floor(workspace.DistributedGameTime+0.5)
-            local h = math.floor(gt/(60^2))%24
-            local m = math.floor(gt/(60^1))%60
-            local s = math.floor(gt/(60^0))%60
-            TimeLabel.SetText("TIME PLAYED: "..h.."h "..m.."min "..s.."s")
-
-            _G.FightersPointDD:SetText("Map Selected: ".. _G.Config.MapToOpen)
-
-            local FightersCount = 0
-            local FightersSelected = {}
-            for k, v in pairs(_G.Config.UnitsToDelete) do
-                if v == true then
-                    FightersCount += 1
-                    table.insert(FightersSelected, k)
+                if _G.Config.Farm.Mob ~= "" then
+                    _G.MobsDD:SetText("Mob Selected: ".. _G.Config.Farm.Mob) else
+                    _G.MobsDD:SetText("Select Mob")
                 end
+
+                _G.RangeDD:SetText("Kill Aura Range: ".. _G.Config.Farm.Range)
+                _G.TestDD:SetText("Test Selected: ".. GetTest({"name", _G.Config.Test.Name}))
+                _G.DefenseDD:SetText("Defense Selected: ".. _G.Config.Defense.ID)
+                _G.PowerAreaDD:SetText("Power Area Selected: ".. _G.Config.PowerArea.Multiplier)
+
             end
 
-            if FightersCount > 0 then
-                _G.DeleteUnitsDD:SetText("Delete: ".. table.concat(FightersSelected, ", "))
-            else
-                _G.DeleteUnitsDD:SetText("Select Units to Delete")
+            do -- GAMEPASS
+
+                pcall(function()
+                    local Gamepasses = {"Teleport", "Auto Click", "Magnet", "Fast Open"}
+                    local Service = require(game:GetService("Players").LocalPlayer.PlayerGui.UI.Client.Services)
+                    for i, v in pairs(Gamepasses) do
+                        Service.PlayerData.Gamepasses[v] = true
+                    end
+                end)
+
             end
 
-            if #_G.Config.Boosts > 1 then
-                _G.BoostsDD:SetText("Boosts Selected: ".. table.concat(_G.Config.Boosts, ", "))
-            elseif #_G.Config.Boosts == 1 then
-                _G.BoostsDD:SetText("Boost Selected: ".. table.concat(_G.Config.Boosts, ", ")) else 
-                _G.BoostsDD:SetText("Select Boosts")
-            end
+            do -- FIGHTERS
 
-            if _G.Config.AlwaysSet then
-                if game.Players.LocalPlayer.Character then
-                    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = _G.Config.WalkSpeed
-                    game.Players.LocalPlayer.Character.Humanoid.JumpPower = _G.Config.JumpPower
+                _G.FightersPointDD:SetText("Map Selected: ".. _G.Config.MapToOpen)
+
+                local FightersCount = 0
+                local FightersSelected = {}
+                for k, v in pairs(_G.Config.UnitsToDelete) do
+                    if v == true then
+                        FightersCount += 1
+                        table.insert(FightersSelected, k)
+                    end
                 end
+
+                if FightersCount > 0 then
+                    _G.DeleteUnitsDD:SetText("Delete: ".. table.concat(FightersSelected, ", "))
+                else
+                    _G.DeleteUnitsDD:SetText("Select Units to Delete")
+                end
+
+                if #_G.Config.FightersToFuse > 0 then
+                    _G.FuseDD:SetText("To Fuse: ".. table.concat(_G.Config.FightersToFuse, ", ")) else
+                    _G.FuseDD:SetText("Select Fighters To Fuse")
+                end
+
             end
-            if not _G.SelectingKey and _G.Keybind then
-                local key = string.gsub(_G.Config.Keybind, "Enum.KeyCode.", "")
-                _G.Keybind:SetText("Keybind: " .. key) else _G.Keybind:SetText("Keybind: ...")
+
+            do -- MISC
+
+                local gt = math.floor(workspace.DistributedGameTime+0.5)
+                local h = math.floor(gt/(60^2))%24
+                local m = math.floor(gt/(60^1))%60
+                local s = math.floor(gt/(60^0))%60
+                TimeLabel.SetText("TIME PLAYED: "..h.."h "..m.."min "..s.."s")
+
+                if #_G.Config.Skills > 1 then
+                    _G.SkillsDD:SetText("Skills Selected: ".. table.concat(_G.Config.Skills, ", "))
+                elseif #_G.Config.Skills == 1 then
+                    _G.SkillsDD:SetText("Skill Selected: ".. table.concat(_G.Config.Skills, ", ")) else 
+                    _G.SkillsDD:SetText("Select Skills")
+                end
+
+                if #_G.Config.Boosts > 1 then
+                    _G.BoostsDD:SetText("Boosts Selected: ".. table.concat(_G.Config.Boosts, ", "))
+                elseif #_G.Config.Boosts == 1 then
+                    _G.BoostsDD:SetText("Boost Selected: ".. table.concat(_G.Config.Boosts, ", ")) else 
+                    _G.BoostsDD:SetText("Select Boosts")
+                end
+
+                if _G.Config.AlwaysSet then
+                    if game.Players.LocalPlayer.Character then
+                        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = _G.Config.WalkSpeed
+                        game.Players.LocalPlayer.Character.Humanoid.JumpPower = _G.Config.JumpPower
+                    end
+                end
+                if not _G.SelectingKey and _G.Keybind then
+                    local key = string.gsub(_G.Config.Keybind, "Enum.KeyCode.", "")
+                    _G.Keybind:SetText("Keybind: " .. key) else _G.Keybind:SetText("Keybind: ...")
+                end
+
             end
         end)
         game:GetService("UserInputService").InputBegan:connect(function(input, processed)
