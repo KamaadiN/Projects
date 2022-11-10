@@ -21,7 +21,7 @@ local function InGame()
     end
 end
 
-if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Whitelist.lua"))(), game.Players.LocalPlayer.UserId) and (InLobby() or InGame()) then
+if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/WL.lua"))() and (InLobby() or InGame()) then
 
     function DataStore()
         local DS = {}
