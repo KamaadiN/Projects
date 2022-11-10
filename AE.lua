@@ -4,7 +4,7 @@ game:GetService("Players").LocalPlayer.Idled:connect(function()
     game:GetService("VirtualUser"):ClickButton2(Vector2.new())
 end)
 
-if table.find(loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/Whitelist.lua"))(), game.Players.LocalPlayer.UserId) and game.PlaceId == 10723695195 then
+if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/WL.lua"))() and game.PlaceId == 10723695195 then
 
     task.wait(5)
 
