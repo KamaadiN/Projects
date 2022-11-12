@@ -12,7 +12,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
         Farm = {
             Enabled = false,
-            KillMob = false,
+            KillMob = true,
             Range = "Low [No Lag]",
             Mob = "Luffe",
             Area = "Ooy Piece",
@@ -20,7 +20,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         },
         Defense = {
             Enabled = false,
-            ID = "Defense"
+            IDS = {}
         },
         PowerArea = {
             Enabled = false,
@@ -46,6 +46,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         MapToOpen = "Ooy Piece",
         UnitsToDelete = {},
 
+        Infos = {
+            Defense = "1"
+        },
+
         EquipBest = false,
         EquipDelay = 10,
 
@@ -63,7 +67,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         JumpPower = 50,
         Keybind = "Enum.KeyCode.RightAlt",
 
-        ConfigChanges = 1.5
+        ConfigChanges = 1.6
     }
 
     local hubname = " MAZTER HUB - Anime Evolution"
@@ -321,14 +325,16 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         return defenses
     end
     local function GetDefense(option)
-        if option[2] == nil then option[2] = "" end
-        if option[1] == "Current Defense Wave" then
-            local wave = game:GetService("ReplicatedStorage")["DefenseMode"..option[2]].Wave.Value
-            return wave
-        elseif option[1] == "Highest Defense Wave" then
+        if option[2] == "1" then option[2] = "" end
+        if option[1] == "Highest Wave" then
             local svc = require(game:GetService("Players").LocalPlayer.PlayerGui.UI.Client.Services)
-            local highest_wave = svc.PlayerData["DefenseMode"..option[2]]["MaxWaveHit"]
-            return highest_wave
+            return svc.PlayerData["DefenseMode"..option[2]]["MaxWaveHit"]
+        end
+        if option[1] == "Current Wave" then
+            return game:GetService("ReplicatedStorage")["DefenseMode"..option[2]].Wave.Value
+        end
+        if option[1] == "Status" then
+            return game:GetService("ReplicatedStorage")["DefenseMode"..option[2]].WaveStatus.Value
         end
     end
     local function GetPowerArea(option)
@@ -519,6 +525,9 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         local UiPg = UI.New({
             Title = "UI"
         })
+        local InfosPg = UI.New({
+            Title = "INFOS"
+        })
         local MiscPg = UI.New({
             Title = "MISC"
         })
@@ -534,7 +543,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 Enabled = _G.Config.Farm.Enabled
             })
             MainPg.Toggle({
-                Text = "Kill Mob Selected",
+                Text = "Kill Selected Mob",
                 Callback = function(v)
                     _G.Config.Farm.KillMob = v
                     SaveConfig()
@@ -592,6 +601,16 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     end)
                 end
             })
+            MainPg.Button({
+                Text = "Set Avatar",
+                Callback = function()
+                    pcall(function()
+                        if _G.Config.Farm.Mob ~= "" then
+                            game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"CharacterChange", _G.Config.Farm.Mob})
+                        end
+                    end)
+                end
+            })
             MainPg.Toggle({
                 Text = "Auto Defense",
                 Callback = function(v)
@@ -603,14 +622,15 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             _G.DefenseDD = MainPg.Dropdown({
                 Text = "Select Defense",
                 Callback = function(v)
-                    _G.Config.Defense.ID = v
+                    if not table.find(_G.Config.Defense.IDS, v) then
+                        table.insert(_G.Config.Defense.IDS, v)
+                    else
+                        table.remove(_G.Config.Defense.IDS, table.find(_G.Config.Defense.IDS, v))
+                    end
                     SaveConfig()
                 end,
                 Options = GetDefenses()
             })
-            _G.DefenseLabels = {}
-            _G.DefenseLabels["Highest Defense Wave"] = MainPg.Label({Text = ""})
-            _G.DefenseLabels["Current Defense Wave"] = MainPg.Label({Text = ""})
             MainPg.Toggle({
                 Text = "Auto Power Area",
                 Callback = function(v)
@@ -798,6 +818,24 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     end
                 })
             end
+
+        -- INFOS
+
+            _G.Infos = {}
+            _G.Infos["Defense"] = InfosPg.Dropdown({
+                Text = "Defense",
+                Callback = function(v)
+                    local def = string.match(v, "%d+")
+                    if def == nil then def = "1" end
+                    _G.Config.Infos.Defense = def
+                    SaveConfig()
+                end,
+                Options = GetDefenses()
+            })
+            _G.DefenseLabels = {}
+            _G.DefenseLabels["Highest Wave"] = InfosPg.Label({Text = ""})
+            _G.DefenseLabels["Current Wave"] = InfosPg.Label({Text = ""})
+            _G.DefenseLabels["Status"] = InfosPg.Label({Text = ""})
 
         -- MISC 
 
@@ -990,8 +1028,12 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             while wait() do
                 pcall(function()
                     if _G.Config.Defense.Enabled then
-                        for i, v in pairs(workspace.__WORKSPACE.Mobs[_G.Config.Defense.ID]:GetChildren()) do 
-                            Click("attack", v)
+                        for i, v in pairs(workspace.__WORKSPACE.Mobs:GetChildren()) do
+                            if table.find(_G.Config.Defense.IDS, v.Name) then
+                                for i2, v2 in pairs(v:GetChildren()) do 
+                                    Click("attack", v2)
+                                end
+                            end
                         end
                     end
                 end)
@@ -1128,6 +1170,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         for i = 1, MaxEquip do
                             game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"EquipFighter", fighters[i][2], true})
                         end
+                        svc.CallEvent:Fire({"FighterRefesh"})
                     end
                 end)
             end
@@ -1247,14 +1290,15 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     _G.MobsDD:SetText("Mob Selected: ".. _G.Config.Farm.Mob) else
                     _G.MobsDD:SetText("Select Mob")
                 end
-
                 _G.RangeDD:SetText("Kill Aura Range: ".. _G.Config.Farm.Range)
-                _G.TestDD:SetText("Test Selected: ".. GetTest({"name", _G.Config.Test.Name}))
-                _G.DefenseDD:SetText("Defense Selected: ".. _G.Config.Defense.ID)
-                for i, v in pairs(_G.DefenseLabels) do
-                    _G.DefenseLabels[i].SetText(i..": ".. GetDefense({i, string.match(_G.Config.Defense.ID, "%d+")}))
+                if #_G.Config.Defense.IDS > 1 then
+                    _G.DefenseDD:SetText("Defenses Selected: ".. table.concat(_G.Config.Defense.IDS, ", ")) elseif #_G.Config.Defense.IDS == 1 then
+                    _G.DefenseDD:SetText("Defense Selected: ".. table.concat(_G.Config.Defense.IDS, ", ")) else
+                    _G.DefenseDD:SetText("Select Defenses")
                 end
                 _G.PowerAreaDD:SetText("Power Area Selected: ".. _G.Config.PowerArea.Multiplier)
+                _G.TestDD:SetText("Test Selected: ".. GetTest({"name", _G.Config.Test.Name}))
+                
             end
 
             do -- GAMEPASS
@@ -1293,6 +1337,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     _G.FuseDD:SetText("Select Fighters To Fuse")
                 end
 
+            end
+
+            do -- INFOS
+                _G.Infos["Defense"]:SetText("Defense Selected: ".. _G.Config.Infos.Defense)
+                for i, v in pairs(_G.DefenseLabels) do
+                    _G.DefenseLabels[i].SetText(i..": ".. GetDefense({i, _G.Config.Infos.Defense}))
+                end
             end
 
             do -- MISC
