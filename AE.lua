@@ -320,6 +320,17 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         end
         return defenses
     end
+    local function GetDefense(option)
+        if option[2] == nil then option[2] = "" end
+        if option[1] == "Current Defense Wave" then
+            local wave = game:GetService("ReplicatedStorage")["DefenseMode"..option[2]].Wave.Value
+            return wave
+        elseif option[1] == "Highest Defense Wave" then
+            local svc = require(game:GetService("Players").LocalPlayer.PlayerGui.UI.Client.Services)
+            local highest_wave = svc.PlayerData["DefenseMode"..option[2]]["MaxWaveHit"]
+            return highest_wave
+        end
+    end
     local function GetPowerArea(option)
         if option == "all" then
             local t = {}
@@ -597,6 +608,9 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 end,
                 Options = GetDefenses()
             })
+            _G.DefenseLabels = {}
+            _G.DefenseLabels["Highest Defense Wave"] = MainPg.Label({Text = ""})
+            _G.DefenseLabels["Current Defense Wave"] = MainPg.Label({Text = ""})
             MainPg.Toggle({
                 Text = "Auto Power Area",
                 Callback = function(v)
@@ -935,7 +949,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         function CheckBody()
             while wait() do
                 pcall(function()
-                    if _G.Config.OpenFighter or _G.Config.PowerArea.Enabled or GetTest({_G.Config.Test.Name, "actived"}) then
+                    if _G.Config.OpenFighter or _G.Config.PowerArea.Enabled or _G.Config.Test.Enabled and GetTest({_G.Config.Test.Name, "actived"}) then
                         if game.Players.LocalPlayer.Character then
                             if not game.Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("Body") then
                                 Body("create", "Velocity", "Body", game.Players.LocalPlayer.Character.HumanoidRootPart)
@@ -1237,8 +1251,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 _G.RangeDD:SetText("Kill Aura Range: ".. _G.Config.Farm.Range)
                 _G.TestDD:SetText("Test Selected: ".. GetTest({"name", _G.Config.Test.Name}))
                 _G.DefenseDD:SetText("Defense Selected: ".. _G.Config.Defense.ID)
+                for i, v in pairs(_G.DefenseLabels) do
+                    _G.DefenseLabels[i].SetText(i..": ".. GetDefense({i, string.match(_G.Config.Defense.ID, "%d+")}))
+                end
                 _G.PowerAreaDD:SetText("Power Area Selected: ".. _G.Config.PowerArea.Multiplier)
-
             end
 
             do -- GAMEPASS
