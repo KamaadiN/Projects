@@ -959,7 +959,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 SaveConfig()
             end,
             Enabled = _G.Config.Story.Enabled
-        })
+        })--[[
         StoryPg.Toggle({
             Text = "Erwin until Buff",
             Callback = function(v)
@@ -967,7 +967,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 SaveConfig()
             end,
             Enabled = _G.Config.Story.ErwinUntilBuff
-        })
+        })]]--
         _G.StoryMapDD = StoryPg.Dropdown({
             Text = "Select Map",
             Callback = function(op)
@@ -1583,7 +1583,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 Text = "Craft Items",
                 Callback = function()
                     local GuiService = require(game.ReplicatedStorage.src.Loader).load_client_service(script, "GUIService")
-                    GuiService.craft_item_ui:toggle()
+                    GuiService.craft_evolve_items_ui:toggle()
                 end
             })
             _G.UiPg.Button({
@@ -1684,14 +1684,6 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end,
             Enabled = _G.Config.AutoSummon
         })
-        local BannerDD = MiscPg.Dropdown({
-            Text = "Select Banner",
-            Callback = function(op)
-                _G.Config.Banner = op
-                SaveConfig()
-            end,
-            Options = {"Standard", "EventClover"}
-        })
         MiscPg.TextField({
             Text = "Search Unit",
             Callback = function(v)
@@ -1709,6 +1701,14 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 SaveConfig()
             end,
             Options = GetUnitsID("allgameunits")
+        })
+        local BannerDD = MiscPg.Dropdown({
+            Text = "Select Banner",
+            Callback = function(op)
+                _G.Config.Banner = op
+                SaveConfig()
+            end,
+            Options = {"Standard", "EventClover"}
         })
         local SummonWithDD = MiscPg.Dropdown({
             Text = "Summon With",
@@ -1909,8 +1909,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 end
             end
             local function AutoSummon()
-                if _G.Config.AutoSummon and _G.Config.Summoning then
-                    game:GetService("ReplicatedStorage").endpoints.client_to_server.buy_random_fighter:InvokeServer("dbz_fighter", _G.Config.SummonWith)
+                if _G.Config.AutoSummon and (_G.Config.Banner == "Standard" and _G.Config.Summoning or _G.Config.Banner == "EventClover") then
+                    game:GetService("ReplicatedStorage").endpoints.client_to_server.buy_from_banner:InvokeServer(_G.Config.Banner, _G.Config.SummonWith)
                 end
             end
             
@@ -3030,6 +3030,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 _G.UnitsToGetDD:SetText("Units to Get: ".. table.concat(_G.Config.UnitsToGet, ", ")) else
                 _G.UnitsToGetDD:SetText("Select Units to Get")
             end
+            BannerDD:SetText("Open With Banner: ".. _G.Config.Banner)
             SummonWithDD:SetText("Summon With: ".. _G.Config.SummonWith)
             if #_G.Config.RaritiesToSell > 0 then
                 RaritiesDD:SetText("Sell Rarities: " .. table.concat(_G.Config.RaritiesToSell, ", ")) else
