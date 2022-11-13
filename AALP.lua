@@ -208,7 +208,7 @@ if game.PlaceId == 8349889591 then
                         for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                             if v["_stats"] and tostring(v["_stats"].player.Value) == game.Players.LocalPlayer.Name then
                                 if v["_stats"].id.Value == "erwin" then
-                                    if v:FindFirstChild("_stats").upgrade.Value >= 3 and v:FindFirstChild("_buffs")["damage_buff"].Value == 0 then
+                                    if v:FindFirstChild("_stats").upgrade.Value >= 3 and v:FindFirstChild("_buffs")["damage_buff__erwin"].Value == 0 then
                                         game:GetService("ReplicatedStorage").endpoints.client_to_server.use_active_attack:InvokeServer(v)
                                     end
                                 elseif v["_stats"].id.Value == "kisuke_evolved" then
