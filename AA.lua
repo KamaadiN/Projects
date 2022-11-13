@@ -28,6 +28,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
         function DS.GetAllMaps()
             return {
+                {clover = "Clover Kingdom"},
                 {jjk = "Cursed Academy"},
                 {magnolia = "Magic Town"},
                 {hxhant = "Ant Kingdom"},
@@ -64,6 +65,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
         function DS.Codes()
             return {
+                "CLOVER",
                 "HALLOWEEN",
                 "CURSE2",
                 "CURSE",
@@ -190,6 +192,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         AutoSummon = false,
         Summoning = false,
         UnitsToGet = {},
+        Banner = "Standard",
         SummonWith = "gems",
         RaritiesToSell = {},
 
@@ -209,13 +212,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             Money = {},
             All = {}
         },
-        ConfigChanges = 1.8
+        ConfigChanges = 1.9
     }
 
     local hubname = " MAZTER HUB - Anime Adventures"
     local configpath = "MazterHub/AnimeAdventures.txt"
     local shpath = "MazterHub/ServerHop.json"
-
+    
     local function MergeConfig(OldConfig, NewConfig)
 
         local primaryTypes = {"string", "number", "boolean"}
@@ -1681,6 +1684,14 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end,
             Enabled = _G.Config.AutoSummon
         })
+        local BannerDD = MiscPg.Dropdown({
+            Text = "Select Banner",
+            Callback = function(op)
+                _G.Config.Banner = op
+                SaveConfig()
+            end,
+            Options = {"Standard", "EventClover"}
+        })
         MiscPg.TextField({
             Text = "Search Unit",
             Callback = function(v)
@@ -2397,6 +2408,22 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         u5 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 3),
                         u6 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 4)
                     },
+                    ["clover_legend"] = {
+                        u1 = UnitCFrames(CFrame.new(-185.7, 40, 19.5), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 4)
+                    },
+                    ["clover"] = {
+                        u1 = UnitCFrames(CFrame.new(-185.7, 40, 19.5), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 4)
+                    },
                     ["jjk"] = {
                         u1 = UnitCFrames(CFrame.new(378.5, 146, -78.5), 3, "money"),
                         u2 = UnitCFrames(CFrame.new(364, 122, -87), 6, "z", 0),
@@ -2718,7 +2745,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                             if tostring(v["_stats"].player.Value) == game.Players.LocalPlayer.Name then
                                 if string.match(v["_stats"].id.Value, "erwin") then
-                                    if v:FindFirstChild("_stats").upgrade.Value >= 3 and v:FindFirstChild("_buffs")["damage_buff"].Value == 0 then
+                                    if v:FindFirstChild("_stats").upgrade.Value >= 3 and v:FindFirstChild("_buffs")["damage_buff__erwin"].Value == 0 then
                                         game:GetService("ReplicatedStorage").endpoints.client_to_server.use_active_attack:InvokeServer(v)
                                     end
                                 elseif string.match(v["_stats"].id.Value, "kisuke_evolved") then
