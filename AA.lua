@@ -87,6 +87,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
     _G.Config = {
         IsA = "",
+        GlobalLobby = "",
 
         Story = {
             Enabled = false,
@@ -112,12 +113,12 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 u6 = 6
             },
             UpgradeCap = {
-                u1 = 5,
-                u2 = 5,
-                u3 = 5,
-                u4 = 5,
-                u5 = 5,
-                u6 = 5
+                u1 = 15,
+                u2 = 15,
+                u3 = 15,
+                u4 = 15,
+                u5 = 15,
+                u6 = 15
             }
         },
         Inf = {
@@ -169,6 +170,11 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             WaveToLose = 50,
             Map = "thriller_bark"
         },
+        LegendStage = {
+            Enabled = false,
+            Map = "clover",
+            Level = "clover_legend_1"
+        },
 
         WebhookURL = "",
         DiscordID = "",
@@ -212,10 +218,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             Money = {},
             All = {}
         },
-        ConfigChanges = 1.9
+        ConfigChanges = 2.1
     }
 
-    local hubname = " MAZTER HUB - Anime Adventures"
+    local hubname = "MAZTER HUB"
     local configpath = "MazterHub/AnimeAdventures.txt"
     local shpath = "MazterHub/ServerHop.json"
     
@@ -298,6 +304,9 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         _G.Config.Raid.Lobby = ""
         _G.Config.Chg.Lobby = ""
         _G.Config.Summoning = true
+        if InLobby() then
+            _G.Config.IsA = ""
+        end
     end
     local function SaveConfig()
         if (writefile) then
@@ -515,7 +524,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         local t = {}
         if get == "all" then
             for k, v in pairs(levels) do
-                if string.match(k, whats) and string.match(k, "_level_") then
+                if string.match(k, whats) and (string.match(k, "_level_") or string.match(k, "_legend_")) then
                     table.insert(t, v["name"])
                 end
             end
@@ -527,7 +536,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             return t
         elseif get == "id" then
             for k, v in pairs(levels) do
-                if string.match(k, "_level_") then
+                if string.match(k, "_level_") or string.match(k, "_legend_") then
                     if v["name"] == whats then
                         return k
                     end
@@ -535,7 +544,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end
         elseif get == "name" then
             for k, v in pairs(levels) do
-                if string.match(k, "_level_") then
+                if string.match(k, "_level_") or string.match(k, "_legend_") then
                     if k == whats then
                         return v["name"]
                     end
@@ -592,13 +601,22 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         end
     end
     local function GetLastRoom()
-        for i, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("InfiniteTowerUI").LevelSelect.InfoFrame.LevelButtons:GetChildren()) do
-            if v.Name == "FloorButton" then
-                if v:FindFirstChild("clear") then
-                    if v.clear.Visible == false then
-                        return string.match(v.Main.text.Text, "%d+")
+        if InLobby() then
+            for i, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("InfiniteTowerUI").LevelSelect.InfoFrame.LevelButtons:GetChildren()) do
+                if v.Name == "FloorButton" then
+                    if v:FindFirstChild("clear") then
+                        if v.clear.Visible == false then
+                            return tonumber(string.match(v.Main.text.Text, "%d+"))
+                        end
                     end
                 end
+            end
+        elseif InGame() then
+            local leveldata = game:GetService("Workspace")["_MAP_CONFIG"].GetLevelData:InvokeServer()
+            if leveldata["_infinite_tower_floor"] then
+                return tonumber(leveldata["_infinite_tower_floor"])
+            else
+                return _G.Config.InfCastle.Room
             end
         end
     end
@@ -683,43 +701,28 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
     local function GetUnit(mode, order)
         return string.split(_G.Config[mode].Units[order], " ")[1]
     end
-    local function GetUpgrades(UnitID)
-        local Units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
-        return #Units[UnitID]["upgrade"]
+    local function GetUpgrades(UnitID, UnitOrder, Mode)
+        local units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
+        local upgrades = #units[UnitID]["upgrade"]
+        if Mode == "Inf" then
+            return upgrades
+        else
+            if _G.Config[Mode].UpgradeCap[UnitOrder] > upgrades then
+                return upgrades
+            else
+                return _G.Config[Mode].UpgradeCap[UnitOrder]
+            end
+        end
     end
     local function IsUpgraded(Unit, Mode)
         local Units = game:GetService("Workspace")["_UNITS"]:GetChildren()
         local UnitID = string.split(_G.Config[Mode].Units[Unit], " ")[1]
         local UnitsUpgraded = 0
-        if _G.Config.Story.ErwinUntilBuff and mode == "Story" then
-            if UnitID == "erwin" then
-                for i, v in next, Units do
-                    if v["_stats"].player.Value == game.Players.LocalPlayer then
-                        if string.match(v._stats.id.Value, "erwin") then
-                            if v._stats.upgrade.Value >= 3 then
-                                UnitsUpgraded += 1
-                            end
-                        end
-                    end
-                end
-            else
-                for i, v in next, Units do
-                    if v["_stats"].player.Value == game.Players.LocalPlayer then
-                        if string.match(v._stats.id.Value, UnitID) then
-                            if v._stats.upgrade.Value >= GetUpgrades(v._stats.id.Value) then
-                                UnitsUpgraded += 1
-                            end
-                        end
-                    end
-                end
-            end
-        else
-            for i, v in next, Units do
-                if v["_stats"].player.Value == game.Players.LocalPlayer then
-                    if string.match(v._stats.id.Value, UnitID) then
-                        if v._stats.upgrade.Value >= GetUpgrades(v._stats.id.Value) then
-                            UnitsUpgraded += 1
-                        end
+        for i, v in next, Units do
+            if v["_stats"].player.Value == game.Players.LocalPlayer then
+                if string.match(v._stats.id.Value, UnitID) then
+                    if v._stats.upgrade.Value >= GetUpgrades(v._stats.id.Value, Unit, Mode) then
+                        UnitsUpgraded += 1
                     end
                 end
             end
@@ -733,6 +736,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         else
             return false
         end
+    end
+    local function CheckRoom()
+        _G.Config.InfCastle.Room = GetLastRoom()
+        SaveConfig()
     end
     local function SendWebhook(WebhookData, CanMark)
         if CanMark and _G.Config.DiscordID ~= "" then
@@ -897,7 +904,9 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         task.wait(18)
     end
 
+    task.spawn(HideName)
     task.spawn(HideLeaderboard)
+    task.spawn(RemoveErrors)
     task.spawn(SilentExecution)
 
     -- GUI
@@ -905,18 +914,19 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         if InLobby() then
             _G.UI = Material.Load({
                 Title = hubname,
+                SubTitle = "Anime Adventures",
                 Style = 1,
-                SizeX = 450,
-                SizeY = 540,
+                SizeX = 500,
+                SizeY = 560,
                 Theme = "VeryDark",
             })
-        end
-        if InGame() then
+        elseif InGame() then
             _G.UI = Material.Load({
                 Title = hubname,
+                SubTitle = "Anime Adventures",
                 Style = 1,
-                SizeX = 350,
-                SizeY = 440,
+                SizeX = 390,
+                SizeY = 450,
                 Theme = "VeryDark",
             })
         end
@@ -951,7 +961,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         })
 
     -- STORY
-
+        
         StoryPg.Toggle({
             Text = "Auto Story",
             Callback = function(v)
@@ -959,15 +969,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 SaveConfig()
             end,
             Enabled = _G.Config.Story.Enabled
-        })--[[
-        StoryPg.Toggle({
-            Text = "Erwin until Buff",
-            Callback = function(v)
-                _G.Config.Story.ErwinUntilBuff = v
-                SaveConfig()
-            end,
-            Enabled = _G.Config.Story.ErwinUntilBuff
-        })]]--
+        })
         _G.StoryMapDD = StoryPg.Dropdown({
             Text = "Select Map",
             Callback = function(op)
@@ -1160,6 +1162,19 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 Min = 1,
                 Max = GetMaxSpawn(i),
                 Def = _G.Config.Story.SpawnCap["u"..i]
+            })
+        end
+        StoryPg.Label({Text = "UPGRADE CAP"})
+        for i = 1, 6 do
+            StoryPg.Slider({
+                Text = "[UPGRADE CAP] - Unit "..i,
+                Callback = function(v)
+                    _G.Config.Story.UpgradeCap["u"..i] = v
+                    SaveConfig()
+                end,
+                Min = 1,
+                Max = 15,
+                Def = _G.Config.Story.UpgradeCap["u"..i]
             })
         end
 
@@ -1493,6 +1508,24 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         })
         OthersPg.Label({
             Text = "auto thriller bark uses the infinite team"
+        })
+
+    -- LEGEND STAGE
+        OthersPg.Toggle({
+            Text = "Auto Legend Stage",
+            Callback = function(v)
+                _G.Config.LegendStage.Enabled = v
+                SaveConfig()
+            end,
+            Enabled = _G.Config.LegendStage.Enabled
+        })
+        _G.LegendLevelsDD = OthersPg.Dropdown({
+            Text = "Select Level",
+            Callback = function(op)
+                _G.Config.LegendStage.Level = GetLevel("id", op)
+                SaveConfig()
+            end,
+            Options = GetLevel("all", "clover_legend")
         })
 
     -- WEBHOOK
@@ -1837,15 +1870,12 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
     -- MAIN FUNCTIONS
 
-        task.spawn(HideName)
-        task.spawn(RemoveErrors)
 
         if InLobby() then
 
             task.spawn(SaveCollection)
 
             local CheckedMode = false
-            local CheckedRoom = false
             local CheckedMission = false
             local ClaimedMission = false
             local ChallengeSent = false
@@ -2004,7 +2034,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end
 
             local function CheckMode()
-                if _G.Config.Story.Enabled or _G.Config.Inf.Enabled or _G.Config.Raid.Enabled or _G.Config.Chg.Enabled or _G.Config.InfCastle.Enabled or _G.Config.Mission.Enabled or _G.Config.CursedWomb.Enabled or _G.Config.ThrillerBark.Enabled then
+                if _G.Config.Story.Enabled or _G.Config.Inf.Enabled or _G.Config.Raid.Enabled or _G.Config.Chg.Enabled or _G.Config.InfCastle.Enabled or 
+                _G.Config.Mission.Enabled or _G.Config.CursedWomb.Enabled or _G.Config.ThrillerBark.Enabled or _G.Config.LegendStage.Enabled then
                     
                     if _G.Config.Raid.Lobby == "" and _G.Config.Chg.Lobby == "" and not CheckedMode then task.wait(1) end
 
@@ -2041,6 +2072,21 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                                         _G.Config.IsA = "CursedWomb"
                                         CheckedMode = true
                                         SaveConfig()
+                                    elseif _G.Config.ThrillerBark.Enabled then
+                                        _G.Config.IsA = "ThrillerBark"
+                                        CheckedMode = true
+                                        SaveConfig()
+                                        for i, v in pairs(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("MissionUI").Main.Main.Main.Content.main.Scroll:GetChildren()) do
+                                            if v:FindFirstChild("event") then
+                                                if string.match(v.QuestDescription.Text, "Thriller Park") then
+                                                    game:GetService("ReplicatedStorage").endpoints.client_to_server.request_claim_mission:InvokeServer(string.gsub(GetMission("id", v.event.Text), "__quest", ""))
+                                                end
+                                            end
+                                        end
+                                    elseif _G.Config.LegendStage.Enabled then
+                                        _G.Config.IsA = "LegendStage"
+                                        CheckedMode = true
+                                        SaveConfig()
                                     elseif _G.Config.InfCastle.Enabled then
                                         _G.Config.IsA = "InfCastle"
                                         CheckedMode = true
@@ -2056,6 +2102,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                                     end
                                 end
                             end
+                    elseif _G.Config.CursedWomb.Enabled and HasItem("sukuna_finger", "<", 19) and HasItem("key_jjk_finger", ">", 1) then
+                            _G.Config.IsA = "CursedWomb"
+                            CheckedMode = true
+                            SaveConfig()
                     elseif _G.Config.ThrillerBark.Enabled then
                         _G.Config.IsA = "ThrillerBark"
                         CheckedMode = true
@@ -2067,8 +2117,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                                 end
                             end
                         end
-                    elseif _G.Config.CursedWomb.Enabled and HasItem("sukuna_finger", "<", 19) and HasItem("key_jjk_finger", ">", 1) then
-                        _G.Config.IsA = "CursedWomb"
+                    elseif _G.Config.LegendStage.Enabled then
+                        _G.Config.IsA = "LegendStage"
                         CheckedMode = true
                         SaveConfig()
                     elseif _G.Config.InfCastle.Enabled then
@@ -2133,17 +2183,16 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     end
                 end
             end
-            local function CheckRoom()
-                if _G.Config.InfCastle.Enabled then
-                    _G.Config.InfCastle.Room = tonumber(GetLastRoom())
-                    CheckedRoom = true
-                end
-            end
 
             local function Join(mode)
                 pcall(function()
-                    if mode == "Story" or mode == "Inf" or mode == "Mission" then
-                        game:GetService("ReplicatedStorage").endpoints.client_to_server.request_join_lobby:InvokeServer("_lobbytemplategreen9")
+                    if mode == "Story" or mode == "Inf" or mode == "Mission" or mode == "LegendStage" then
+                        for _, v in pairs(game:GetService("Workspace")["_LOBBIES"].Story:GetChildren()) do
+                            if v["Players"] and not v["Players"]:FindFirstChild("Value") then
+                                _G.Config.GlobalLobby = v.Name
+                            end
+                        end
+                        game:GetService("ReplicatedStorage").endpoints.client_to_server.request_join_lobby:InvokeServer(_G.Config.GlobalLobby)
                     elseif mode == "Chg" then
                         for _, v in pairs(game:GetService("Workspace")["_CHALLENGES"].Challenges:GetChildren()) do
                             if _G.Config.Chg.Lobby ~= "" then break end
@@ -2161,9 +2210,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         end
                         game:GetService("ReplicatedStorage").endpoints.client_to_server.request_join_lobby:InvokeServer(_G.Config.Raid.Lobby)
                     elseif mode == "InfCastle" then
-                        if CheckedRoom then
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower:InvokeServer(_G.Config.InfCastle.Room)
-                        end
+                        game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower:InvokeServer(_G.Config.InfCastle.Room)
                     elseif mode == "CursedWomb" then
                         game:GetService("ReplicatedStorage").endpoints.client_to_server.request_join_lobby:InvokeServer("_lobbytemplate_event229", {["selected_key"] = "key_jjk_finger"})
                     elseif mode == "ThrillerBark" then
@@ -2175,16 +2222,18 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 pcall(function()
                     if mode == "Story" then
                         local level = _G.Config.Story.Level
-                        game:GetService("ReplicatedStorage").endpoints.client_to_server.request_lock_level:InvokeServer("_lobbytemplategreen9", level, true, _G.Config.Story.Difficulty)
+                        game:GetService("ReplicatedStorage").endpoints.client_to_server.request_lock_level:InvokeServer(_G.Config.GlobalLobby, level, true, _G.Config.Story.Difficulty)
                     elseif mode == "Inf" then
                         local level = _G.Config.Inf.Map .."_infinite"
-                        game:GetService("ReplicatedStorage").endpoints.client_to_server.request_lock_level:InvokeServer("_lobbytemplategreen9", level, true, "Hard")
+                        game:GetService("ReplicatedStorage").endpoints.client_to_server.request_lock_level:InvokeServer(_G.Config.GlobalLobby, level, true, "Hard")
                     elseif mode == "Mission" then
                         if string.match(_G.Config.Mission.Level, "level") then
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_lock_level:InvokeServer("_lobbytemplategreen9", _G.Config.Mission.Level, true, "Normal")
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_lock_level:InvokeServer(_G.Config.GlobalLobby, _G.Config.Mission.Level, true, "Normal")
                         elseif string.match(_G.Config.Mission.Level, "infinite") then
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_lock_level:InvokeServer("_lobbytemplategreen9", _G.Config.Mission.Level, true, "Hard")
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_lock_level:InvokeServer(_G.Config.GlobalLobby, _G.Config.Mission.Level, true, "Hard")
                         end
+                    elseif mode == "LegendStage" then
+                        game:GetService("ReplicatedStorage").endpoints.client_to_server.request_lock_level:InvokeServer(_G.Config.GlobalLobby, _G.Config[mode].Level, true, "Hard")
                     end
                 end)
             end
@@ -2289,7 +2338,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end
             local function StartTP()
                 pcall(function()
-                    game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_game:InvokeServer("_lobbytemplategreen9")
+                    game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_game:InvokeServer(_G.Config.GlobalLobby)
                 end)
             end
 
@@ -2323,8 +2372,9 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 while wait() do
                     pcall(function()
                         CheckMode()
+                        CheckRoom()
                         if not _G.Config.Summoning then
-                            if _G.Config.Story.Enabled and _G.Config.IsA == "Story" or _G.Config.Inf.Enabled and _G.Config.IsA == "Inf" then
+                            if _G.Config.Story.Enabled and _G.Config.IsA == "Story" or _G.Config.Inf.Enabled and _G.Config.IsA == "Inf" or _G.Config.LegendStage.Enabled and _G.Config.IsA == "LegendStage" then
                                 Join(_G.Config.IsA)
                                 task.wait(1)
                                 Create(_G.Config.IsA)
@@ -2338,7 +2388,6 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                                 Join(_G.Config.IsA)
                                 CheckLobby(_G.Config.IsA)
                             elseif _G.Config.InfCastle.Enabled and _G.Config.IsA == "InfCastle" then
-                                CheckRoom()
                                 Join(_G.Config.IsA)
                                 task.wait(10)
                             elseif _G.Config.Mission.Enabled and _G.Config.IsA == "Mission" then
@@ -2408,21 +2457,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         u5 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 3),
                         u6 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 4)
                     },
-                    ["clover_legend"] = {
-                        u1 = UnitCFrames(CFrame.new(-185.7, 40, 19.5), 3, "money"),
-                        u2 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 0),
-                        u3 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 1),
-                        u4 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 2),
-                        u5 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 3),
-                        u6 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 4)
-                    },
                     ["clover"] = {
-                        u1 = UnitCFrames(CFrame.new(-185.7, 40, 19.5), 3, "money"),
-                        u2 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 0),
-                        u3 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 1),
-                        u4 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 2),
-                        u5 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 3),
-                        u6 = UnitCFrames(CFrame.new(-185.7, 1.24, 19.5), 6, "z", 4)
+                        u1 = UnitCFrames(CFrame.new(-176.3, 44, -8.3), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-176.3, 1.24, -8.3), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-176.3, 1.24, -8.3), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-176.3, 1.24, -8.3), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-176.3, 1.24, -8.3), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-176.3, 1.24, -8.3), 6, "z", 4)
                     },
                     ["jjk"] = {
                         u1 = UnitCFrames(CFrame.new(378.5, 146, -78.5), 3, "money"),
@@ -2555,44 +2596,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end
             function PlaceUnits(option)
                 local wave = game:GetService("Workspace"):WaitForChild("_wave_num").Value
-                if option == "Story" or option == "Raid" or option == "CursedWomb" or option == "Chg" or option == "InfCastle" or option == "Mission" then
-                    if wave < 15 and _G.Config.Story.Units["u1"] ~= "" then
-                        local uID = string.split(_G.Config.Story.Units["u1"], " ")
-                        for i = 1, GetSpawnCap(uID[1]) do
-                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u1", i))
-                        end
-                    end
-                    if wave < 15 and _G.Config.Story.Units["u2"] ~= "" then
-                        local uID = string.split(_G.Config.Story.Units["u2"], " ")
-                        for i = 1, _G.Config.Story.SpawnCap["u2"] do
-                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u2", i))
-                        end
-                    end
-                    if wave < 15 and _G.Config.Story.Units["u3"] ~= "" then
-                        local uID = string.split(_G.Config.Story.Units["u3"], " ")
-                        for i = 1, _G.Config.Story.SpawnCap["u3"] do
-                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u3", i))
-                        end
-                    end
-                    if wave > 6 and _G.Config.Story.Units["u4"] ~= "" then
-                        local uID = string.split(_G.Config.Story.Units["u4"], " ")
-                        for i = 1, _G.Config.Story.SpawnCap["u4"] do
-                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u4", i))
-                        end
-                    end
-                    if wave > 6 and _G.Config.Story.Units["u5"] ~= "" then
-                        local uID = string.split(_G.Config.Story.Units["u5"], " ")
-                        for i = 1, _G.Config.Story.SpawnCap["u5"] do
-                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u5", i))
-                        end
-                    end
-                    if wave > 6 and _G.Config.Story.Units["u6"] ~= "" then
-                        local uID = string.split(_G.Config.Story.Units["u6"], " ")
-                        for i = 1, _G.Config.Story.SpawnCap["u6"] do
-                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u6", i))
-                        end
-                    end
-                elseif option == "Inf" or option == "ThrillerBark" then
+                if option == "Inf" or option == "ThrillerBark" then
 
                     local UnitID = {
                         string.split(_G.Config.Inf.Units["u1"], " "),
@@ -2645,6 +2649,43 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             end
                         end
                     end
+                else
+                    if wave < 15 and _G.Config.Story.Units["u1"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u1"], " ")
+                        for i = 1, GetSpawnCap(uID[1]) do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u1", i))
+                        end
+                    end
+                    if wave < 15 and _G.Config.Story.Units["u2"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u2"], " ")
+                        for i = 1, _G.Config.Story.SpawnCap["u2"] do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u2", i))
+                        end
+                    end
+                    if wave < 15 and _G.Config.Story.Units["u3"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u3"], " ")
+                        for i = 1, _G.Config.Story.SpawnCap["u3"] do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u3", i))
+                        end
+                    end
+                    if wave > 6 and _G.Config.Story.Units["u4"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u4"], " ")
+                        for i = 1, _G.Config.Story.SpawnCap["u4"] do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u4", i))
+                        end
+                    end
+                    if wave > 6 and _G.Config.Story.Units["u5"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u5"], " ")
+                        for i = 1, _G.Config.Story.SpawnCap["u5"] do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u5", i))
+                        end
+                    end
+                    if wave > 6 and _G.Config.Story.Units["u6"] ~= "" then
+                        local uID = string.split(_G.Config.Story.Units["u6"], " ")
+                        for i = 1, _G.Config.Story.SpawnCap["u6"] do
+                            PlaceToLoc(uID[3], UnitPos(_G.Config[option].Map, "u6", i))
+                        end
+                    end
                 end
             end
             function AutoUpgrade(UpgType, mode)
@@ -2653,10 +2694,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     if UpgType == "Per Order" then
                         if wave > 4 then
                             if _G.Config[mode].Units["u1"] ~= "" then
-                                local UnitID = string.split(_G.Config[mode].Units["u1"], " ")[1]
+                                local UnitID = GetUnit(mode, "u1")
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
-                                        if string.match(v["_stats"].id.Value, UnitID) then
+                                        if string.match(v["_stats"].id.Value, UnitID) and v["_stats"].upgrade.Value < GetUpgrades(UnitID, "u1", mode) then
                                             game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
                                         end
                                     end
@@ -2664,10 +2705,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             end
                             if _G.Config[mode].Units["u2"] ~= "" and _G.Config[mode].Units["u1"] ~= "" and IsUpgraded("u1", mode) and not IsUpgraded("u2", mode) or 
                             _G.Config[mode].Units["u1"] == "" and _G.Config[mode].Units["u2"] ~= "" and not IsUpgraded("u2", mode) then
-                                local UnitID = string.split(_G.Config[mode].Units["u2"], " ")[1]
+                                local UnitID = GetUnit(mode, "u2")
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
-                                        if string.match(v["_stats"].id.Value, UnitID) then
+                                        if string.match(v["_stats"].id.Value, UnitID) and v["_stats"].upgrade.Value < GetUpgrades(UnitID, "u2", mode) then
                                             game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
                                         end
                                     end
@@ -2675,10 +2716,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             end
                             if _G.Config[mode].Units["u3"] ~= "" and _G.Config[mode].Units["u2"] ~= "" and IsUpgraded("u2", mode) and not IsUpgraded("u3", mode) or 
                             _G.Config[mode].Units["u2"] == "" and _G.Config[mode].Units["u3"] ~= "" and not IsUpgraded("u3", mode) then
-                                local UnitID = string.split(_G.Config[mode].Units["u3"], " ")[1]
+                                local UnitID = GetUnit(mode, "u3")
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
-                                        if string.match(v["_stats"].id.Value, UnitID) then
+                                        if string.match(v["_stats"].id.Value, UnitID) and v["_stats"].upgrade.Value < GetUpgrades(UnitID, "u3", mode) then
                                             game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
                                         end
                                     end
@@ -2686,10 +2727,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             end
                             if _G.Config[mode].Units["u4"] ~= "" and _G.Config[mode].Units["u3"] ~= "" and IsUpgraded("u3", mode) and not IsUpgraded("u4", mode) or 
                             _G.Config[mode].Units["u3"] == "" and _G.Config[mode].Units["u4"] ~= "" and not IsUpgraded("u4", mode) then
-                                local UnitID = string.split(_G.Config[mode].Units["u4"], " ")[1]
+                                local UnitID = GetUnit(mode, "u4")
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
-                                        if string.match(v["_stats"].id.Value, UnitID) then
+                                        if string.match(v["_stats"].id.Value, UnitID) and v["_stats"].upgrade.Value < GetUpgrades(UnitID, "u4", mode) then
                                             game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
                                         end
                                     end
@@ -2697,10 +2738,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             end
                             if _G.Config[mode].Units["u5"] ~= "" and _G.Config[mode].Units["u4"] ~= "" and IsUpgraded("u4", mode) and not IsUpgraded("u5", mode) or 
                             _G.Config[mode].Units["u4"] == "" and _G.Config[mode].Units["u5"] ~= "" and not IsUpgraded("u5", mode) then
-                                local UnitID = string.split(_G.Config[mode].Units["u5"], " ")[1]
+                                local UnitID = GetUnit(mode, "u5")
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
-                                        if string.match(v["_stats"].id.Value, UnitID) then
+                                        if string.match(v["_stats"].id.Value, UnitID) and v["_stats"].upgrade.Value < GetUpgrades(UnitID, "u5", mode) then
                                             game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
                                         end
                                     end
@@ -2708,10 +2749,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             end
                             if _G.Config[mode].Units["u6"] ~= "" and _G.Config[mode].Units["u5"] ~= "" and IsUpgraded("u5", mode) and not IsUpgraded("u6", mode) or 
                             _G.Config[mode].Units["u5"] == "" and _G.Config[mode].Units["u6"] ~= "" and not IsUpgraded("u6", mode) then
-                                local UnitID = string.split(_G.Config[mode].Units["u6"], " ")[1]
+                                local UnitID = GetUnit(mode, "u6")
                                 for i, v in next, game:GetService("Workspace")["_UNITS"]:GetChildren() do
                                     if v["_stats"].player.Value == game.Players.LocalPlayer then
-                                        if string.match(v["_stats"].id.Value, UnitID) then
+                                        if string.match(v["_stats"].id.Value, UnitID) and v["_stats"].upgrade.Value < GetUpgrades(UnitID, "u6", mode) then
                                             game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
                                         end
                                     end
@@ -2782,7 +2823,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             function Notify()
                 if game:GetService("Workspace")["_DATA"].GameFinished.Value == true then
                     if _G.Config.Notify["Game Results"] and not NotifySent or _G.Config.SaveStatistics and not SavedStatistics then
-                        task.wait(5)
+                        task.wait(6)
                         if game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Enabled then
                             pcall(function()
                                 local timer = game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.Middle.Timer.Text
@@ -2872,14 +2913,16 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             function Teleport()
                 if game:GetService("Workspace")["_DATA"].GameFinished.Value == true then
                     if _G.Config.Notify["Game Results"] and NotifySent or _G.Config.SaveStatistics and SavedStatistics then
-                        _G.Config.IsA = ""
-                        SaveConfig()
-                        game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
+                        if _G.Config.IsA == "InfCastle" then
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() else
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
+                        end
                     elseif not _G.Config.SaveStatistics or not _G.Config.Notify["Game Results"] then
                         wait(2)
-                        _G.Config.IsA = ""
-                        SaveConfig()
-                        game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
+                        if _G.Config.IsA == "InfCastle" then
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() else
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
+                        end
                     end
                 end
             end
@@ -2890,7 +2933,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         if _G.Config.Story.Enabled and _G.Config.IsA == "Story" or 
                         _G.Config.Raid.Enabled and _G.Config.IsA == "Raid" or 
                         _G.Config.CursedWomb.Enabled and _G.Config.IsA == "CursedWomb" or 
-                        _G.Config.Chg.Enabled and _G.Config.IsA == "Chg" then
+                        _G.Config.Chg.Enabled and _G.Config.IsA == "Chg" or 
+                        _G.Config.LegendStage.Enabled and _G.Config.IsA == "LegendStage" then
                             StartGame()
                             AutoUpgrade("Per Order", "Story")
                             AutoBuff()
@@ -2904,6 +2948,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             Notify()
                             Teleport()
                         elseif _G.Config.InfCastle.Enabled and _G.Config.IsA == "InfCastle" then
+                            CheckRoom()
                             StartGame()
                             AutoUpgrade("Per Order", "Story")
                             AutoBuff()
@@ -2949,18 +2994,9 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
         game:GetService("RunService").RenderStepped:Connect(function()
 
-            if InLobby() then
-                for i = 1, 6 do
-                    local unit = string.split(_G.Config.Story.Units["u"..i], " ")[1]
-                    if _G.Config.Story.Units["u"..i] ~= "" then
-                        _G.StoryUnitDD[i]:SetText(i.." - ".. unit)
-                    else
-                        _G.StoryUnitDD[i]:SetText(i.." - Empty")
-                    end
-                end
-            end
-            if InGame() and _G.StoryUnitDD then
-                pcall(function()
+            do -- STORY
+
+                if InLobby() then
                     for i = 1, 6 do
                         local unit = string.split(_G.Config.Story.Units["u"..i], " ")[1]
                         if _G.Config.Story.Units["u"..i] ~= "" then
@@ -2969,24 +3005,27 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             _G.StoryUnitDD[i]:SetText(i.." - Empty")
                         end
                     end
-                end)
-            end
-            _G.StoryMapDD:SetText("Map Selected: " .. GetMap("name", _G.Config.Story.Map))
-            _G.LevelsDD:SetText("Level Selected: " .. GetLevel("name", _G.Config.Story.Level))
-            _G.Difficulty:SetText("Difficulty Selected: " .. _G.Config.Story.Difficulty)
-
-            if InLobby() then
-                for i = 1, 6 do
-                    local unit = string.split(_G.Config.Inf.Units["u"..i], " ")[1]
-                    if _G.Config.Inf.Units["u"..i] ~= "" then
-                        _G.InfUnitDD[i]:SetText(i.." - ".. unit)
-                    else
-                        _G.InfUnitDD[i]:SetText(i.." - Empty")
-                    end
                 end
+                if InGame() and _G.StoryUnitDD then
+                    pcall(function()
+                        for i = 1, 6 do
+                            local unit = string.split(_G.Config.Story.Units["u"..i], " ")[1]
+                            if _G.Config.Story.Units["u"..i] ~= "" then
+                                _G.StoryUnitDD[i]:SetText(i.." - ".. unit)
+                            else
+                                _G.StoryUnitDD[i]:SetText(i.." - Empty")
+                            end
+                        end
+                    end)
+                end
+                _G.StoryMapDD:SetText("Map Selected: " .. GetMap("name", _G.Config.Story.Map))
+                _G.LevelsDD:SetText("Level Selected: " .. GetLevel("name", _G.Config.Story.Level))
+                _G.Difficulty:SetText("Difficulty Selected: " .. _G.Config.Story.Difficulty)
             end
-            if InGame() and _G.InfUnitDD then
-                pcall(function()
+
+            do -- INFINITE
+
+                if InLobby() then
                     for i = 1, 6 do
                         local unit = string.split(_G.Config.Inf.Units["u"..i], " ")[1]
                         if _G.Config.Inf.Units["u"..i] ~= "" then
@@ -2995,67 +3034,92 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             _G.InfUnitDD[i]:SetText(i.." - Empty")
                         end
                     end
-                end)
-            end
-            MapDD:SetText("Map Selected: " .. GetMap("name", _G.Config.Inf.Map))
-            UpgDD:SetText("Upgrade Mode: " .. _G.Config.Inf.UpgradeMode)
-
-            if #_G.Config.Raid.MapsFilter > 0 then
-                RaidMapDD:SetText("Maps Filter: " .. table.concat(_G.Config.Raid.MapsFilter, ", ")) else
-                RaidMapDD:SetText("Maps Filter: None")
-            end
-            if #_G.Config.Chg.BlockedMaps > 0 then
-                ChgMapDD:SetText("Blocked Maps: " .. table.concat(_G.Config.Chg.BlockedMaps, ", ")) else
-                ChgMapDD:SetText("Blocked Maps: None")
-            end
-            if #_G.Config.Chg.BlockedChgs > 0 then
-                ChgsDD:SetText("Blocked Challenges: " .. table.concat(_G.Config.Chg.BlockedChgs, ", ")) else
-                ChgsDD:SetText("Blocked Challenges: None")
-            end
-            if #_G.Config.Chg.RewardsFilter > 0 then
-                ChgRwdDD:SetText("Rewards: " .. table.concat(_G.Config.Chg.RewardsFilter, ", ")) else
-                ChgRwdDD:SetText("Rewards Filter")
-            end
-
-            if InLobby() then
-                RoomLabel.SetText("ROOM: ".. GetLastRoom()) else
-                RoomLabel.SetText("ROOM: ".. _G.Config.InfCastle.Room)
-            end
-
-            MissionNameLabel.SetText("NAME: ".. _G.Config.Mission.Name)
-            MissionDescLabel.SetText("DESCRIPTION: ".. _G.Config.Mission.Desc)
-            MissionLevelLabel.SetText("LEVEL: ".. _G.Config.Mission.Level)
-
-            if #_G.Config.UnitsToGet > 0 then
-                _G.UnitsToGetDD:SetText("Units to Get: ".. table.concat(_G.Config.UnitsToGet, ", ")) else
-                _G.UnitsToGetDD:SetText("Select Units to Get")
-            end
-            BannerDD:SetText("Open With Banner: ".. _G.Config.Banner)
-            SummonWithDD:SetText("Summon With: ".. _G.Config.SummonWith)
-            if #_G.Config.RaritiesToSell > 0 then
-                RaritiesDD:SetText("Sell Rarities: " .. table.concat(_G.Config.RaritiesToSell, ", ")) else
-                RaritiesDD:SetText("Rarities to Sell")
-            end
-
-            if #_G.Config.ItemsToBuy > 0 then
-                _G.ItemsDD:SetText("Items: " .. table.concat(_G.Config.ItemsToBuy, ", ")) else
-                _G.ItemsDD:SetText("Select Items to Buy")
-            end
-            if InLobby() then
-                if CapsuleSelected ~= "" then
-                    _G.CapsulesDD:SetText("Capsule Selected: " .. GetCapsuleName(CapsuleSelected))
-                else
-                    _G.CapsulesDD:SetText("Select Capsule")
                 end
-            end
-            if not _G.SelectingHubKey then
-                local key = string.gsub(_G.Config.Keybind, "Enum.KeyCode.", "")
-                _G.HubKeyBTN:SetText("Keybind: " .. key) else _G.HubKeyBTN:SetText("Keybind: ...")
+                if InGame() and _G.InfUnitDD then
+                    pcall(function()
+                        for i = 1, 6 do
+                            local unit = string.split(_G.Config.Inf.Units["u"..i], " ")[1]
+                            if _G.Config.Inf.Units["u"..i] ~= "" then
+                                _G.InfUnitDD[i]:SetText(i.." - ".. unit)
+                            else
+                                _G.InfUnitDD[i]:SetText(i.." - Empty")
+                            end
+                        end
+                    end)
+                end
+                MapDD:SetText("Map Selected: " .. GetMap("name", _G.Config.Inf.Map))
+                UpgDD:SetText("Upgrade Mode: " .. _G.Config.Inf.UpgradeMode)
+
             end
 
-            for k, v in pairs(_G.Config.Stats) do
-                Labels[k].SetText(k .. ": ".. _G.Config.Stats[k])
+            do -- OTHERS
+
+                if #_G.Config.Raid.MapsFilter > 0 then
+                    RaidMapDD:SetText("Maps Filter: " .. table.concat(_G.Config.Raid.MapsFilter, ", ")) else
+                    RaidMapDD:SetText("Maps Filter: None")
+                end
+                if #_G.Config.Chg.BlockedMaps > 0 then
+                    ChgMapDD:SetText("Blocked Maps: " .. table.concat(_G.Config.Chg.BlockedMaps, ", ")) else
+                    ChgMapDD:SetText("Blocked Maps: None")
+                end
+                if #_G.Config.Chg.BlockedChgs > 0 then
+                    ChgsDD:SetText("Blocked Challenges: " .. table.concat(_G.Config.Chg.BlockedChgs, ", ")) else
+                    ChgsDD:SetText("Blocked Challenges: None")
+                end
+                if #_G.Config.Chg.RewardsFilter > 0 then
+                    ChgRwdDD:SetText("Rewards: " .. table.concat(_G.Config.Chg.RewardsFilter, ", ")) else
+                    ChgRwdDD:SetText("Rewards Filter")
+                end
+
+                RoomLabel.SetText("CURRENT ROOM: ".. GetLastRoom())
+
+                MissionNameLabel.SetText("NAME: ".. _G.Config.Mission.Name)
+                MissionDescLabel.SetText("DESCRIPTION: ".. _G.Config.Mission.Desc)
+                MissionLevelLabel.SetText("LEVEL: ".. _G.Config.Mission.Level)
+
+                _G.LegendLevelsDD:SetText("Level Selected: ".. GetLevel("name", _G.Config.LegendStage.Level))
             end
+
+            do -- STATS
+
+                for k, v in pairs(_G.Config.Stats) do
+                    Labels[k].SetText(k .. ": ".. _G.Config.Stats[k])
+                end
+
+            end
+
+            do -- MISC
+
+                if #_G.Config.UnitsToGet > 0 then
+                    _G.UnitsToGetDD:SetText("Units to Get: ".. table.concat(_G.Config.UnitsToGet, ", ")) else
+                    _G.UnitsToGetDD:SetText("Select Units to Get")
+                end
+                BannerDD:SetText("Open With Banner: ".. _G.Config.Banner)
+                SummonWithDD:SetText("Summon With: ".. _G.Config.SummonWith)
+                if #_G.Config.RaritiesToSell > 0 then
+                    RaritiesDD:SetText("Sell Rarities: " .. table.concat(_G.Config.RaritiesToSell, ", ")) else
+                    RaritiesDD:SetText("Rarities to Sell")
+                end
+
+                if #_G.Config.ItemsToBuy > 0 then
+                    _G.ItemsDD:SetText("Items: " .. table.concat(_G.Config.ItemsToBuy, ", ")) else
+                    _G.ItemsDD:SetText("Select Items to Buy")
+                end
+                if InLobby() then
+                    if CapsuleSelected ~= "" then
+                        _G.CapsulesDD:SetText("Capsule Selected: " .. GetCapsuleName(CapsuleSelected))
+                    else
+                        _G.CapsulesDD:SetText("Select Capsule")
+                    end
+                end
+                if not _G.SelectingHubKey then
+                    local key = string.gsub(_G.Config.Keybind, "Enum.KeyCode.", "")
+                    _G.HubKeyBTN:SetText("Keybind: " .. key) else _G.HubKeyBTN:SetText("Keybind: ...")
+                end
+
+            end
+
+            
         end)
         game:GetService("UserInputService").InputBegan:connect(function(input, processed)
             if input.UserInputType == Enum.UserInputType.Keyboard and _G.SelectingHubKey then
