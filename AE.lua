@@ -70,7 +70,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         ConfigChanges = 1.6
     }
 
-    local hubname = " MAZTER HUB - Anime Evolution"
+    local hubname = " MAZTER HUB"
     local scriptpath = "MazterHub/AnimeEvolution.txt"
     local shpath = "MazterHub/ServerHop.json"
 
@@ -511,6 +511,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/MaterialLibrary.lua"))()
         local UI = Material.Load({
             Title = hubname,
+            SubTitle = "Anime Evolution"
             Style = 1,
             SizeX = 550,
             SizeY = 400,
