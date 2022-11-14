@@ -172,7 +172,6 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         },
         LegendStage = {
             Enabled = false,
-            Map = "clover",
             Level = "clover_legend_1"
         },
 
@@ -218,7 +217,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             Money = {},
             All = {}
         },
-        ConfigChanges = 2.1
+        ConfigChanges = 2.11
     }
 
     local hubname = "MAZTER HUB"
@@ -304,6 +303,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         _G.Config.Raid.Lobby = ""
         _G.Config.Chg.Lobby = ""
         _G.Config.Summoning = true
+        _G.Config.LegendStage.Map = "clover_legend"
         if InLobby() then
             _G.Config.IsA = ""
         end
@@ -904,7 +904,6 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         task.wait(18)
     end
 
-    task.spawn(HideName)
     task.spawn(HideLeaderboard)
     task.spawn(RemoveErrors)
     task.spawn(SilentExecution)
@@ -1870,6 +1869,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
     -- MAIN FUNCTIONS
 
+    task.spawn(HideName)
 
         if InLobby() then
 
@@ -2457,13 +2457,21 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         u5 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 3),
                         u6 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 4)
                     },
+                    ["clover_legend"] = {
+                        u1 = UnitCFrames(CFrame.new(-176.3, 44, -8.3), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 4)
+                    },
                     ["clover"] = {
                         u1 = UnitCFrames(CFrame.new(-176.3, 44, -8.3), 3, "money"),
-                        u2 = UnitCFrames(CFrame.new(-176.3, 1.24, -8.3), 6, "z", 0),
-                        u3 = UnitCFrames(CFrame.new(-176.3, 1.24, -8.3), 6, "z", 1),
-                        u4 = UnitCFrames(CFrame.new(-176.3, 1.24, -8.3), 6, "z", 2),
-                        u5 = UnitCFrames(CFrame.new(-176.3, 1.24, -8.3), 6, "z", 3),
-                        u6 = UnitCFrames(CFrame.new(-176.3, 1.24, -8.3), 6, "z", 4)
+                        u2 = UnitCFrames(CFrame.new(-173.7, 1.24, -17.1), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-173.7, 1.24, -17.1), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-173.7, 1.24, -17.1), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-173.7, 1.24, -17.1), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-173.7, 1.24, -17.1), 6, "z", 4)
                     },
                     ["jjk"] = {
                         u1 = UnitCFrames(CFrame.new(378.5, 146, -78.5), 3, "money"),
@@ -3176,9 +3184,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             local item = string.gsub(child.Tex.Text, "Obtained ", "")
                             local item2 = string.gsub(item, "!", "")
                             table.insert(_G.ObtainedItems, item2)
-                            print(item2)
                         end
                     end
+                end
+            end)
+            game:GetService("Players").LocalPlayer.PlayerGui.DropObtainedGUI.messages.ChildAdded:Connect(function(child)
+                if child.Name == "Frame" then
+                    table.insert(_G.ObtainedItems, child.Tex.Text)
                 end
             end)
         end
