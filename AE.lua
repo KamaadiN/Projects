@@ -511,7 +511,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore/main/MaterialLibrary.lua"))()
         local UI = Material.Load({
             Title = hubname,
-            SubTitle = "Anime Evolution"
+            SubTitle = "Anime Evolution",
             Style = 1,
             SizeX = 550,
             SizeY = 400,
