@@ -70,7 +70,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         ConfigChanges = 1.6
     }
 
-    local hubname = " MAZTER HUB"
+    local hubname = "MAZTER HUB"
     local scriptpath = "MazterHub/AnimeEvolution.txt"
     local shpath = "MazterHub/ServerHop.json"
 
