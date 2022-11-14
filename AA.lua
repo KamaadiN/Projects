@@ -96,6 +96,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             Map = "namek",
             Level = "namek_level_1",
             Difficulty = "Normal",
+            UpgradeMode = "Per Order",
             Units = {
                 u1 = "",
                 u2 = "",
@@ -217,7 +218,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             Money = {},
             All = {}
         },
-        ConfigChanges = 2.11
+        ConfigChanges = 2.111
     }
 
     local hubname = "MAZTER HUB"
@@ -994,6 +995,14 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end,
             Options = {"Normal", "Hard"}
         })
+        local StoryUpgDD = StoryPg.Dropdown({
+            Text = "Upgrade Mode",
+            Callback = function(op)
+                _G.Config.Story.UpgradeMode = op
+                SaveConfig()
+            end,
+            Options = {"Random", "Per Order"}
+        })
         
         if InLobby() then
             StoryPg.TextField({
@@ -1195,7 +1204,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end,
             Options = GetMap("all")
         })
-        local UpgDD = InfPg.Dropdown({
+        local InfUpgDD = InfPg.Dropdown({
             Text = "Upgrade Mode",
             Callback = function(op)
                 _G.Config.Inf.UpgradeMode = op
@@ -2773,7 +2782,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                                 if tostring(v["_stats"].player.Value) == game.Players.LocalPlayer.Name then
                                     if string.match(v["_stats"].id.Value, "bulma") and wave > 4 or string.match(v["_stats"].id.Value, "speedwagon") and wave > 4 then
                                         game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
-                                    elseif IsUpgraded("u1", mode) then
+                                    elseif wave > 8 then
                                         game:GetService("ReplicatedStorage").endpoints.client_to_server.upgrade_unit_ingame:InvokeServer(v)
                                     end
                                 end
@@ -2944,7 +2953,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         _G.Config.Chg.Enabled and _G.Config.IsA == "Chg" or 
                         _G.Config.LegendStage.Enabled and _G.Config.IsA == "LegendStage" then
                             StartGame()
-                            AutoUpgrade("Per Order", "Story")
+                            AutoUpgrade(_G.Config.Story.UpgradeMode, "Story")
                             AutoBuff()
                             Notify()
                             Teleport()
@@ -2958,13 +2967,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         elseif _G.Config.InfCastle.Enabled and _G.Config.IsA == "InfCastle" then
                             CheckRoom()
                             StartGame()
-                            AutoUpgrade("Per Order", "Story")
+                            AutoUpgrade(_G.Config.Story.UpgradeMode, "Story")
                             AutoBuff()
                             Notify()
                             Teleport()
                         elseif _G.Config.Mission.Enabled and _G.Config.IsA == "Mission" then
                             StartGame()
-                            if string.match(_G.Config.Mission.Level, "infinite") then AutoUpgrade(_G.Config.Inf.UpgradeMode, "Inf") else AutoUpgrade("Per Order", "Story") end
+                            if string.match(_G.Config.Mission.Level, "infinite") then AutoUpgrade(_G.Config.Inf.UpgradeMode, "Inf") else AutoUpgrade(_G.Config.Story.UpgradeMode, "Story") end
                             AutoBuff()
                             if string.match(_G.Config.Mission.Level, "infinite") then AutoSell("Mission") end
                             Notify()
@@ -3029,6 +3038,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 _G.StoryMapDD:SetText("Map Selected: " .. GetMap("name", _G.Config.Story.Map))
                 _G.LevelsDD:SetText("Level Selected: " .. GetLevel("name", _G.Config.Story.Level))
                 _G.Difficulty:SetText("Difficulty Selected: " .. _G.Config.Story.Difficulty)
+                StoryUpgDD:SetText("Upgrade Mode: " .. _G.Config.Story.UpgradeMode)
             end
 
             do -- INFINITE
@@ -3056,7 +3066,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     end)
                 end
                 MapDD:SetText("Map Selected: " .. GetMap("name", _G.Config.Inf.Map))
-                UpgDD:SetText("Upgrade Mode: " .. _G.Config.Inf.UpgradeMode)
+                InfUpgDD:SetText("Upgrade Mode: " .. _G.Config.Inf.UpgradeMode)
 
             end
 
@@ -3189,9 +3199,32 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 end
             end)
             game:GetService("Players").LocalPlayer.PlayerGui.DropObtainedGUI.messages.ChildAdded:Connect(function(child)
-                if child.Name == "Frame" then
-                    table.insert(_G.ObtainedItems, child.Tex.Text)
-                end
+                pcall(function()
+                    if child.Name == "Frame" then
+                        local new_item = string.split(child.Tex.Text, " ")[2]
+                        local function stack_item()
+                            for i, v in pairs(_G.ObtainedItems) do
+                                local old_item = string.split(v, " ")[2]
+                                if old_item == new_item then
+                                    return true, i 
+                                end
+                            end
+                            return false
+                        end
+                        local can_stack, item_index = stack_item()
+                        if can_stack then
+                            local old_item_name = string.split(_G.ObtainedItems[item_index], " ")
+                            local new_item_name = {}
+                            for i = 2, #old_item_name do
+                                table.insert(new_item_name, old_item_name[i])
+                            end
+                            local amount = tonumber(string.match(_G.ObtainedItems[item_index], "%d+")) + tonumber(string.match(child.Tex.Text, "%d+"))
+                            _G.ObtainedItems[item_index] = "+x"..amount.." "..table.concat(new_item_name, " ")
+                        else
+                            table.insert(_G.ObtainedItems, child.Tex.Text)
+                        end
+                    end
+                end)
             end)
         end
 else
