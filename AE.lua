@@ -12,15 +12,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
         Farm = {
             Enabled = false,
-            KillMob = true,
-            Range = "Low [No Lag]",
-            Mob = "Luffe",
+            Mobs = {},
             Area = "Ooy Piece",
-            Areas = {}
+            Enemy = nil
         },
         Defense = {
             Enabled = false,
-            IDS = {}
+            ID = "Defense"
         },
         PowerArea = {
             Enabled = false,
@@ -58,6 +56,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         UseBoosts = false,
         Boosts = {},
 
+        Avatar = "CharacterPlayer",
+
         HideName = false,
         HideRank = false,
         ClaimGifts = false,
@@ -67,7 +67,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         JumpPower = 50,
         Keybind = "Enum.KeyCode.RightAlt",
 
-        ConfigChanges = 1.6
+        ConfigChanges = 1.77
     }
 
     local hubname = "MAZTER HUB"
@@ -157,9 +157,10 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
     local function Click(ClickType, Target)
         if ClickType == "train" then
-            game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"PowerTrain", Target})
+            local service = require(game:GetService("Players").LocalPlayer.PlayerGui.UI.Client.Services)
+            game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"PowerTrain", service.CurrentAreaBuy})
         elseif ClickType == "attack" then
-            game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"AttackMob", Target, "Left Arm"})
+            game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"AttackMob", Target, nil, "Right Arm"})
         end
     end
     local function TeleportTo(CFrame)
@@ -371,18 +372,18 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
     end
     local function GetEnemy(EnemyType)
         if EnemyType == "Farm" then
-            for _, v in next, game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Farm.Area):GetChildren() do
-                if game:GetService("Workspace")["__WORKSPACE"].Mobs[_G.Config.Farm.Area]:FindFirstChild(_G.Config.Farm.Mob) then
-                    if v.Name == _G.Config.Farm.Mob then
+            if _G.Config.Farm.Enemy == nil then
+                for _, v in next, game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Farm.Area):GetChildren() do
+                    if table.find(_G.Config.Farm.Mobs, v.Name) then
                         if v:FindFirstChild("Settings").HP.Value > 0 and v:FindFirstChild("HumanoidRootPart").Position.X ~= 0 and v:FindFirstChild("HumanoidRootPart").Position.Z ~= 0 and v:FindFirstChild("HumanoidRootPart").Position.Y > -1 then
+                            _G.Config.Farm.Enemy = v
                             return v
                         end
                     end
-                else
-                    return game:GetService("Workspace")["__WORKSPACE"].Areas[_G.Config.Farm.Area].Point
                 end
+            else
+                return _G.Config.Farm.Enemy
             end
-            return game:GetService("Workspace")["__WORKSPACE"].Areas[GetAreas("farm")[table.find(GetAreas("farm"), _G.Config.Farm.Area) + 1]].Point
         elseif EnemyType == "Defense" then
             if #game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Defense.ID):GetChildren() > 0 then
                 for _, v in next, game:GetService("Workspace")["__WORKSPACE"].Mobs:FindFirstChild(_G.Config.Defense.ID):GetChildren() do
@@ -400,6 +401,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         return v
                     end
                 end
+            else
+                return nil
             end
         end
     end
@@ -453,10 +456,32 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end
         end
     end
+    local function GetAvatars()
+        local service = require(game:GetService("Players").LocalPlayer.PlayerGui.UI.Client.Services)
+        local avatars = {}
+        for i, v in pairs(service.PlayerData["FightersHave"]) do
+            table.insert(avatars, i)
+        end
+        return avatars
+    end
+    local function BossSpawned()
+        if game:GetService("ReplicatedStorage").BossInfo.Value == "Alive" then
+            return true
+        else
+            return false
+        end
+    end
     local function Search(op, texttofilter)
         local t = {}
         if op == "all" then
             for i, v in pairs(GetFighters("all")) do
+                if string.match(string.lower(v), string.lower(texttofilter)) then
+                    table.insert(t, v)
+                end
+            end
+        end
+        if op == "avatars" then
+            for i, v in pairs(GetAvatars()) do
                 if string.match(string.lower(v), string.lower(texttofilter)) then
                     table.insert(t, v)
                 end
@@ -543,41 +568,12 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 end,
                 Enabled = _G.Config.Farm.Enabled
             })
-            MainPg.Toggle({
-                Text = "Kill Selected Mob",
-                Callback = function(v)
-                    _G.Config.Farm.KillMob = v
-                    SaveConfig()
-                end,
-                Enabled = _G.Config.Farm.KillMob
-            })
-            _G.RangeDD = MainPg.Dropdown({
-                Text = "Kill Aura Range",
-                Callback = function(v)
-                    _G.Config.Farm.Range = v
-                    SaveConfig()
-                end,
-                Options = {
-                    "High [Very Lag]",
-                    "Low [No Lag]"
-                }
-            })
             _G.AreasDD = MainPg.Dropdown({
                 Text = "Area",
                 Callback = function(v)
-                    if _G.Config.Farm.KillMob then
-                        _G.Config.Farm.Area = v
-                        _G.Config.Farm.Mob = ""
-                        _G.MobsDD:SetOptions(GetFighters("mobs", v))
-                    else
-                        if not table.find(_G.Config.Farm.Areas, v) then
-                            table.insert(_G.Config.Farm.Areas, v)
-                        else
-                            table.remove(_G.Config.Farm.Areas, table.find(_G.Config.Farm.Areas, v))
-                        end
-                        _G.Config.Farm.Mob = ""
-                        _G.MobsDD:SetOptions(GetFighters("mobs", _G.Config.Farm.Area))
-                    end
+                    _G.Config.Farm.Area = v
+                    _G.Config.Farm.Mobs = {}
+                    _G.MobsDD:SetOptions(GetFighters("mobs", v))
                     SaveConfig()
                 end,
                 Options = GetAreas("farm")
@@ -585,7 +581,11 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             _G.MobsDD = MainPg.Dropdown({
                 Text = "Mobs",
                 Callback = function(v)
-                    _G.Config.Farm.Mob = v
+                    if not table.find(_G.Config.Farm.Mobs, v) then
+                        table.insert(_G.Config.Farm.Mobs, v)
+                    else
+                        table.remove(_G.Config.Farm.Mobs, table.find(_G.Config.Farm.Mobs, v))
+                    end
                     SaveConfig()
                 end,
                 Options = GetFighters("mobs", _G.Config.Farm.Area)
@@ -596,19 +596,9 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     pcall(function()
                         local Service = require(game:GetService("Players").LocalPlayer.PlayerGui.UI.Client.Services)
                         _G.Config.Farm.Area = tostring(Service.CurrentArea)
-                        _G.Config.Farm.Mob = ""
+                        _G.Config.Farm.Mobs = {}
                         _G.MobsDD:SetOptions(GetFighters("mobs", tostring(Service.CurrentArea)))
                         SaveConfig()
-                    end)
-                end
-            })
-            MainPg.Button({
-                Text = "Set Avatar",
-                Callback = function()
-                    pcall(function()
-                        if _G.Config.Farm.Mob ~= "" then
-                            game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"CharacterChange", _G.Config.Farm.Mob})
-                        end
                     end)
                 end
             })
@@ -623,11 +613,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             _G.DefenseDD = MainPg.Dropdown({
                 Text = "Select Defense",
                 Callback = function(v)
-                    if not table.find(_G.Config.Defense.IDS, v) then
-                        table.insert(_G.Config.Defense.IDS, v)
-                    else
-                        table.remove(_G.Config.Defense.IDS, table.find(_G.Config.Defense.IDS, v))
-                    end
+                    _G.Config.Defense.ID = v
                     SaveConfig()
                 end,
                 Options = GetDefenses()
@@ -928,6 +914,35 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 Options = {"Coins", "Power", "Damage", "Lucky"}
             })
 
+            MiscPg.TextField({
+                Text = "Search Avatar",
+                Callback = function(v)
+                    _G.AvatarsDD:SetOptions(Search("avatars", v))
+                end
+            })
+            _G.AvatarsDD = MiscPg.Dropdown({
+                Text = "Select Avatar",
+                Callback = function(v)
+                    _G.Config.Avatar = v
+                    SaveConfig()
+                end,
+                Options = GetAvatars()
+            })
+            MiscPg.Button({
+                Text = "Set Avatar",
+                Callback = function()
+                    pcall(function()
+                        game:GetService("ReplicatedStorage").Remotes.Client:FireServer({"CharacterChange", _G.Config.Avatar})
+                    end)
+                end
+            })
+            MiscPg.Button({
+                Text = "Refresh Avatars",
+                Callback = function()
+                    _G.AvatarsDD:SetOptions(GetAvatars())
+                end
+            })
+
             MiscPg.Toggle({
                 Text = "Always Set",
                 Callback = function(v)
@@ -988,7 +1003,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         function CheckBody()
             while wait() do
                 pcall(function()
-                    if _G.Config.OpenFighter or _G.Config.PowerArea.Enabled or _G.Config.Test.Enabled and GetTest({_G.Config.Test.Name, "actived"}) then
+                    if _G.Config.Farm.Enabled or _G.Config.Defense.Enabled or _G.Config.Bosses and BossSpawned() or _G.Config.OpenFighter or 
+                    _G.Config.PowerArea.Enabled or _G.Config.Test.Enabled and GetTest({_G.Config.Test.Name, "actived"}) then
                         if game.Players.LocalPlayer.Character then
                             if not game.Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("Body") then
                                 Body("create", "Velocity", "Body", game.Players.LocalPlayer.Character.HumanoidRootPart)
@@ -1000,26 +1016,27 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 end)
             end
         end
+        function CheckEnemy()
+            while wait() do
+                pcall(function()
+                    local enemy = _G.Config.Farm.Enemy
+                    if enemy ~= nil then
+                        if enemy:FindFirstChild("Settings").HP.Value <= 0 and enemy:FindFirstChild("HumanoidRootPart").Position.X == 0 and 
+                        enemy:FindFirstChild("HumanoidRootPart").Position.Z == 0 and enemy:FindFirstChild("HumanoidRootPart").Position.Y <= -1 then
+                            _G.Config.Farm.Enemy = nil
+                        end
+                    end
+                end)
+            end
+        end
         function Farm()
             while wait() do
                 pcall(function()
-                    if _G.Config.Farm.Enabled then
-                        if not _G.Config.Farm.KillMob then
-                            for i, v in pairs(workspace.__WORKSPACE.Mobs:GetChildren()) do
-                                if table.find(_G.Config.Farm.Areas, v.Name) then
-                                    for i2, v2 in pairs(v:GetChildren()) do 
-                                        Click("attack", v2)
-                                    end
-                                end
-                            end
-                        else
-                            if _G.Config.Farm.Mob ~= "" then
-                                for i, v in pairs(workspace.__WORKSPACE.Mobs[_G.Config.Farm.Area]:GetChildren()) do
-                                    if v.Name == _G.Config.Farm.Mob then
-                                        Click("attack", v)
-                                    end
-                                end
-                            end
+                    if _G.Config.Farm.Enabled and (not _G.Config.Bosses or _G.Config.Bosses and not BossSpawned()) and (not _G.Config.Test.Enabled or _G.Config.Test.Enabled and not GetTest({_G.Config.Test.Name, "actived"})) then
+                        if #_G.Config.Farm.Mobs > 0 then
+                            TeleportTo(GetEnemy("Farm").HumanoidRootPart.CFrame)
+                            Click("attack", GetEnemy("Farm"))
+                            Click("train")
                         end
                     end
                 end)
@@ -1028,14 +1045,9 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         function Defense()
             while wait() do
                 pcall(function()
-                    if _G.Config.Defense.Enabled then
-                        for i, v in pairs(workspace.__WORKSPACE.Mobs:GetChildren()) do
-                            if table.find(_G.Config.Defense.IDS, v.Name) then
-                                for i2, v2 in pairs(v:GetChildren()) do 
-                                    Click("attack", v2)
-                                end
-                            end
-                        end
+                    if _G.Config.Defense.Enabled and (not _G.Config.Bosses or _G.Config.Bosses and not BossSpawned()) and (not _G.Config.Test.Enabled or _G.Config.Test.Enabled and not GetTest({_G.Config.Test.Name, "actived"})) then
+                        TeleportTo(GetEnemy("Defense").HumanoidRootPart.CFrame)
+                        Click("attack", GetEnemy("Defense"))
                     end
                 end)
             end
@@ -1063,14 +1075,9 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         function SkillBosses()
             while wait() do
                 pcall(function()
-                    if _G.Config.Bosses then
-                        if game:GetService("ReplicatedStorage").MapInfo.Value ~= "" then
-                            for i, v in pairs(game:GetService("Workspace")["__WORKSPACE"].Mobs[game:GetService("ReplicatedStorage").MapInfo.Value]:GetChildren()) do
-                                if table.find(GetBosses(), v.Name) then
-                                    Click("attack", v)
-                                end
-                            end
-                        end
+                    if _G.Config.Bosses and BossSpawned() then
+                        TeleportTo(GetEnemy("Boss").HumanoidRootPart.CFrame)
+                        Click("attack", GetEnemy("Boss"))
                     end
                 end)
             end
@@ -1234,10 +1241,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         function Settings()
             while wait() do
                 pcall(function()
-                    local delay;
-                    if _G.Config.Farm.Range == "High [Very Lag]" then delay = 100000 else delay = 400 end
-                    if game:GetService("Players").LocalPlayer.PlayerGui.UI.CenterFrame.Settings.Frame.MaxDistance.Frame.TextBox.Text ~= delay then
-                        game:GetService("Players").LocalPlayer.PlayerGui.UI.CenterFrame.Settings.Frame.MaxDistance.Frame.TextBox.Text = delay
+                    if game:GetService("Players").LocalPlayer.PlayerGui.UI.CenterFrame.Settings.Frame.MaxDistance.Frame.TextBox.Text ~= "1000000" then
+                        game:GetService("Players").LocalPlayer.PlayerGui.UI.CenterFrame.Settings.Frame.MaxDistance.Frame.TextBox.Text = "1000000"
                     end
                     if game:GetService("Players").LocalPlayer.PlayerGui.UI.Error.Visible then
                         game:GetService("Players").LocalPlayer.PlayerGui.UI.Error.Visible = false
@@ -1253,6 +1258,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         end
 
         task.spawn(CheckBody)
+        task.spawn(CheckEnemy)
         task.spawn(Farm)
         task.spawn(Defense)
         task.spawn(PowerArea)
@@ -1279,24 +1285,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
             do -- MAIN
 
-                if _G.Config.Farm.KillMob then
-                    _G.AreasDD:SetText("Area Selected: ".. _G.Config.Farm.Area)
-                elseif not _G.Config.Farm.KillMob then
-                    if #_G.Config.Farm.Areas > 0 then
-                        _G.AreasDD:SetText("Areas Selected: ".. table.concat(_G.Config.Farm.Areas, ", ")) else
-                        _G.AreasDD:SetText("Select Area")
-                    end
+                _G.AreasDD:SetText("Area Selected: ".. _G.Config.Farm.Area)
+                if #_G.Config.Farm.Mobs > 1 then
+                    _G.MobsDD:SetText("Mobs Selected: ".. table.concat(_G.Config.Farm.Mobs, ", ")) elseif #_G.Config.Farm.Mobs == 1 then
+                    _G.MobsDD:SetText("Mob Selected: ".. table.concat(_G.Config.Farm.Mobs, ", ")) else
+                    _G.MobsDD:SetText("Select Mobs")
                 end
-                if _G.Config.Farm.Mob ~= "" then
-                    _G.MobsDD:SetText("Mob Selected: ".. _G.Config.Farm.Mob) else
-                    _G.MobsDD:SetText("Select Mob")
-                end
-                _G.RangeDD:SetText("Kill Aura Range: ".. _G.Config.Farm.Range)
-                if #_G.Config.Defense.IDS > 1 then
-                    _G.DefenseDD:SetText("Defenses Selected: ".. table.concat(_G.Config.Defense.IDS, ", ")) elseif #_G.Config.Defense.IDS == 1 then
-                    _G.DefenseDD:SetText("Defense Selected: ".. table.concat(_G.Config.Defense.IDS, ", ")) else
-                    _G.DefenseDD:SetText("Select Defenses")
-                end
+                _G.DefenseDD:SetText("Defense Selected: ".. _G.Config.Defense.ID)
                 _G.PowerAreaDD:SetText("Power Area Selected: ".. _G.Config.PowerArea.Multiplier)
                 _G.TestDD:SetText("Test Selected: ".. GetTest({"name", _G.Config.Test.Name}))
                 
@@ -1368,6 +1363,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     _G.BoostsDD:SetText("Boost Selected: ".. table.concat(_G.Config.Boosts, ", ")) else 
                     _G.BoostsDD:SetText("Select Boosts")
                 end
+
+                _G.AvatarsDD:SetText("Avatar Selected: ".. _G.Config.Avatar)
 
                 if _G.Config.AlwaysSet then
                     if game.Players.LocalPlayer.Character then
