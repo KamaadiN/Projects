@@ -372,7 +372,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         local UnitName;
                         local UnitLevel;
                         for _, u in pairs(Units) do
-                            if u["name"] == v.name.Text then
+                            if u["name"] == v.name.Text and not u["kill_rewards"] then
                                 UnitName = u["id"]
                                 UnitLevel = v.Main.Level.Text
                             end
@@ -402,7 +402,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 end
             elseif unittype == "id" then
                 for _, u in pairs(Units) do
-                    if u["name"] == unitname then
+                    if u["name"] == unitname and not u["kill_rewards"] then
                         return u["id"]
                     end
                 end
@@ -697,7 +697,11 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
     end
     local function GetSpawnCap(Unit)
         local Units = require(game.ReplicatedStorage.src.Loader).load_data(script, "Units")
-        return Units[Unit]["spawn_cap"]
+        if not Units[Unit]["spawn_cap"] then
+            return 1
+        else
+            return Units[Unit]["spawn_cap"]
+        end
     end
     local function GetUnit(mode, order)
         return string.split(_G.Config[mode].Units[order], " ")[1]
@@ -2624,42 +2628,42 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         string.split(_G.Config.Inf.Units["u6"], " ")
                     }
 
-                    if wave < _G.Config[option].WaveToLose then
+                    if wave < _G.Config[option].WaveToLose and #UnitID[1] == 3 then
                         if not HasPlaced(UnitID[1][1]) then
                             for i = 1, GetSpawnCap(UnitID[1][1]) do
                                 PlaceToLoc(UnitID[1][3], UnitPos(_G.Config[option].Map, "u1", i))
                             end
                         end
                     end
-                    if wave < _G.Config[option].WaveToLose then
+                    if wave < _G.Config[option].WaveToLose and #UnitID[2] == 3 then
                         if not HasPlaced(UnitID[2][1]) then
                             for i = 1, GetSpawnCap(UnitID[2][1]) do
                                 PlaceToLoc(UnitID[2][3], UnitPos(_G.Config[option].Map, "u2", i))
                             end
                         end
                     end
-                    if wave < _G.Config[option].WaveToLose then
-                        if not HasPlaced(UnitID[3][1]) and HasPlaced(UnitID[2][1]) then
+                    if wave < _G.Config[option].WaveToLose and #UnitID[3] == 3 then
+                        if not HasPlaced(UnitID[3][1]) then
                             for i = 1, GetSpawnCap(UnitID[3][1]) do
                                 PlaceToLoc(UnitID[3][3], UnitPos(_G.Config[option].Map, "u3", i))
                             end
                         end
                     end
-                    if wave > 6 and wave < _G.Config[option].WaveToLose then
+                    if wave > 6 and wave < _G.Config[option].WaveToLose and #UnitID[4] == 3 then
                         if not HasPlaced(UnitID[4][1]) and HasPlaced(UnitID[3][1]) then
                             for i = 1, GetSpawnCap(UnitID[4][1]) do
                                 PlaceToLoc(UnitID[4][3], UnitPos(_G.Config[option].Map, "u4", i))
                             end
                         end
                     end
-                    if wave > 10 and wave < _G.Config[option].WaveToLose then
+                    if wave > 10 and wave < _G.Config[option].WaveToLose and #UnitID[5] == 3 then
                         if not HasPlaced(UnitID[5][1]) and HasPlaced(UnitID[4][1]) then
                             for i = 1, GetSpawnCap(UnitID[5][1]) do
                                 PlaceToLoc(UnitID[5][3], UnitPos(_G.Config[option].Map, "u5", i))
                             end
                         end
                     end
-                    if wave > 10 and wave < _G.Config[option].WaveToLose then
+                    if wave > 10 and wave < _G.Config[option].WaveToLose and #UnitID[6] == 3 then
                         if not HasPlaced(UnitID[6][1]) and HasPlaced(UnitID[5][1]) then
                             for i = 1, GetSpawnCap(UnitID[6][1]) do
                                 PlaceToLoc(UnitID[6][3], UnitPos(_G.Config[option].Map, "u6", i))
@@ -2932,15 +2936,15 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     if _G.Config.Notify["Game Results"] or _G.Config.SaveStatistics then
                         if NotifySent or SavedStatistics then
                             if _G.Config.IsA == "InfCastle" then
-                                game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(5) else
-                                game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(5)
+                                game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(10) else
+                                game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(10)
                             end
                         end
                     elseif not _G.Config.SaveStatistics and not _G.Config.Notify["Game Results"] then
                         wait(2)
                         if _G.Config.IsA == "InfCastle" then
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(5) else
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(5)
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(10) else
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(10)
                         end
                     end
                 end
@@ -2955,12 +2959,14 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         _G.Config.Chg.Enabled and _G.Config.IsA == "Chg" or 
                         _G.Config.LegendStage.Enabled and _G.Config.IsA == "LegendStage" then
                             StartGame()
+                            PlaceUnits(_G.Config.IsA)
                             AutoUpgrade(_G.Config.Story.UpgradeMode, "Story")
                             AutoBuff()
                             Notify()
                             Teleport()
                         elseif _G.Config.Inf.Enabled and _G.Config.IsA == "Inf" or _G.Config.ThrillerBark.Enabled and _G.Config.IsA == "ThrillerBark" then
                             StartGame()
+                            PlaceUnits(_G.Config.IsA)
                             AutoUpgrade(_G.Config.Inf.UpgradeMode, "Inf")
                             AutoBuff()
                             AutoSell(_G.Config.IsA)
@@ -2968,6 +2974,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             Teleport()
                         elseif _G.Config.InfCastle.Enabled and _G.Config.IsA == "InfCastle" then
                             CheckRoom()
+                            CheckMap(_G.Config.IsA)
+                            if CheckedMap then PlaceUnits(_G.Config.IsA) end
                             StartGame()
                             AutoUpgrade(_G.Config.Story.UpgradeMode, "Story")
                             AutoBuff()
@@ -2975,25 +2983,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             Teleport()
                         elseif _G.Config.Mission.Enabled and _G.Config.IsA == "Mission" then
                             StartGame()
+                            CheckMap(_G.Config.IsA)
+                            if CheckedMap then PlaceUnits(_G.Config.IsA) end
                             if string.match(_G.Config.Mission.Level, "infinite") then AutoUpgrade(_G.Config.Inf.UpgradeMode, "Inf") else AutoUpgrade(_G.Config.Story.UpgradeMode, "Story") end
                             AutoBuff()
                             if string.match(_G.Config.Mission.Level, "infinite") then AutoSell("Mission") end
                             Notify()
                             Teleport()
-                        end
-                    end)
-                end
-            end)
-            spawn(function()
-                while wait() do
-                    pcall(function()
-                        if _G.Config.IsA == "InfCastle" or _G.Config.IsA == "Mission" then
-                            CheckMap(_G.Config.IsA)
-                            if CheckedMap then
-                                PlaceUnits(_G.Config.IsA)
-                            end
-                        else
-                            PlaceUnits(_G.Config.IsA)
                         end
                     end)
                 end
