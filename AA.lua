@@ -2840,7 +2840,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             function Notify()
                 if game:GetService("Workspace")["_DATA"].GameFinished.Value == true then
                     if _G.Config.Notify["Game Results"] and not NotifySent or _G.Config.SaveStatistics and not SavedStatistics then
-                        task.wait(6)
+                        task.wait(4)
                         if game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Enabled then
                             pcall(function()
                                 local timer = game:GetService("Players").LocalPlayer.PlayerGui.ResultsUI.Holder.Middle.Timer.Text
@@ -2929,16 +2929,18 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end
             function Teleport()
                 if game:GetService("Workspace")["_DATA"].GameFinished.Value == true then
-                    if _G.Config.Notify["Game Results"] and NotifySent or _G.Config.SaveStatistics and SavedStatistics then
-                        if _G.Config.IsA == "InfCastle" then
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() else
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
+                    if _G.Config.Notify["Game Results"] or _G.Config.SaveStatistics then
+                        if NotifySent or SavedStatistics then
+                            if _G.Config.IsA == "InfCastle" then
+                                game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(5) else
+                                game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(5)
+                            end
                         end
-                    elseif not _G.Config.SaveStatistics or not _G.Config.Notify["Game Results"] then
+                    elseif not _G.Config.SaveStatistics and not _G.Config.Notify["Game Results"] then
                         wait(2)
                         if _G.Config.IsA == "InfCastle" then
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() else
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer()
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(5) else
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(5)
                         end
                     end
                 end
