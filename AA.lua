@@ -304,7 +304,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         _G.Config.Raid.Lobby = ""
         _G.Config.Chg.Lobby = ""
         _G.Config.Summoning = true
-        _G.Config.LegendStage.Map = "clover_legend"
+        _G.Config.LegendStage.Map = "clover"
         if InLobby() then
             _G.Config.IsA = ""
         end
@@ -2470,21 +2470,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         u5 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 3),
                         u6 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 4)
                     },
-                    ["clover_legend"] = {
+                    ["clover"] = {
                         u1 = UnitCFrames(CFrame.new(-176.3, 44, -8.3), 3, "money"),
                         u2 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 0),
                         u3 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 1),
                         u4 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 2),
                         u5 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 3),
                         u6 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 4)
-                    },
-                    ["clover"] = {
-                        u1 = UnitCFrames(CFrame.new(-176.3, 44, -8.3), 3, "money"),
-                        u2 = UnitCFrames(CFrame.new(-173.7, 1.24, -17.1), 6, "z", 0),
-                        u3 = UnitCFrames(CFrame.new(-173.7, 1.24, -17.1), 6, "z", 1),
-                        u4 = UnitCFrames(CFrame.new(-173.7, 1.24, -17.1), 6, "z", 2),
-                        u5 = UnitCFrames(CFrame.new(-173.7, 1.24, -17.1), 6, "z", 3),
-                        u6 = UnitCFrames(CFrame.new(-173.7, 1.24, -17.1), 6, "z", 4)
                     },
                     ["jjk"] = {
                         u1 = UnitCFrames(CFrame.new(378.5, 146, -78.5), 3, "money"),
@@ -2924,15 +2916,15 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     if _G.Config.Notify["Game Results"] or _G.Config.SaveStatistics then
                         if NotifySent or SavedStatistics then
                             if _G.Config.IsA == "InfCastle" then
-                                game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(10) else
-                                game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(10)
+                                game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(5) else
+                                game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(5)
                             end
                         end
                     elseif not _G.Config.SaveStatistics and not _G.Config.Notify["Game Results"] then
                         wait(2)
                         if _G.Config.IsA == "InfCastle" then
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(10) else
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(10)
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(5) else
+                            game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(5)
                         end
                     end
                 end
