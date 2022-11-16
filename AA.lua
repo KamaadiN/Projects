@@ -2915,17 +2915,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 if game:GetService("Workspace")["_DATA"].GameFinished.Value == true then
                     if _G.Config.Notify["Game Results"] or _G.Config.SaveStatistics then
                         if NotifySent or SavedStatistics then
-                            if _G.Config.IsA == "InfCastle" then
-                                game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(5) else
-                                game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(5)
-                            end
+                            game:GetService('TeleportService'):Teleport(8304191830, game.Players.LocalPlayer)
+                            task.wait(3)
                         end
                     elseif not _G.Config.SaveStatistics and not _G.Config.Notify["Game Results"] then
                         wait(2)
-                        if _G.Config.IsA == "InfCastle" then
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.request_start_infinite_tower_from_game:InvokeServer() task.wait(5) else
-                            game:GetService("ReplicatedStorage").endpoints.client_to_server.teleport_back_to_lobby:InvokeServer() task.wait(5)
-                        end
+                        game:GetService('TeleportService'):Teleport(8304191830, game.Players.LocalPlayer)
+                        task.wait(3)
                     end
                 end
             end
