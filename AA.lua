@@ -2629,45 +2629,33 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     }
 
                     if wave < _G.Config[option].WaveToLose and #UnitID[1] == 3 then
-                        if not HasPlaced(UnitID[1][1]) then
-                            for i = 1, GetSpawnCap(UnitID[1][1]) do
-                                PlaceToLoc(UnitID[1][3], UnitPos(_G.Config[option].Map, "u1", i))
-                            end
+                        for i = 1, GetSpawnCap(UnitID[1][1]) do
+                            PlaceToLoc(UnitID[1][3], UnitPos(_G.Config[option].Map, "u1", i))
                         end
                     end
                     if wave < _G.Config[option].WaveToLose and #UnitID[2] == 3 then
-                        if not HasPlaced(UnitID[2][1]) then
-                            for i = 1, GetSpawnCap(UnitID[2][1]) do
-                                PlaceToLoc(UnitID[2][3], UnitPos(_G.Config[option].Map, "u2", i))
-                            end
+                        for i = 1, 6 do
+                            PlaceToLoc(UnitID[2][3], UnitPos(_G.Config[option].Map, "u2", i))
                         end
                     end
-                    if wave < _G.Config[option].WaveToLose and #UnitID[3] == 3 then
-                        if not HasPlaced(UnitID[3][1]) then
-                            for i = 1, GetSpawnCap(UnitID[3][1]) do
-                                PlaceToLoc(UnitID[3][3], UnitPos(_G.Config[option].Map, "u3", i))
-                            end
+                    if wave > 3 and wave < _G.Config[option].WaveToLose and #UnitID[3] == 3 then
+                        for i = 1, 6 do
+                            PlaceToLoc(UnitID[3][3], UnitPos(_G.Config[option].Map, "u3", i))
                         end
                     end
-                    if wave > 6 and wave < _G.Config[option].WaveToLose and #UnitID[4] == 3 then
-                        if not HasPlaced(UnitID[4][1]) and HasPlaced(UnitID[3][1]) then
-                            for i = 1, GetSpawnCap(UnitID[4][1]) do
-                                PlaceToLoc(UnitID[4][3], UnitPos(_G.Config[option].Map, "u4", i))
-                            end
+                    if wave > 9 and wave < _G.Config[option].WaveToLose and #UnitID[4] == 3 then
+                        for i = 1, 6 do
+                            PlaceToLoc(UnitID[4][3], UnitPos(_G.Config[option].Map, "u4", i))
                         end
                     end
-                    if wave > 10 and wave < _G.Config[option].WaveToLose and #UnitID[5] == 3 then
-                        if not HasPlaced(UnitID[5][1]) and HasPlaced(UnitID[4][1]) then
-                            for i = 1, GetSpawnCap(UnitID[5][1]) do
-                                PlaceToLoc(UnitID[5][3], UnitPos(_G.Config[option].Map, "u5", i))
-                            end
+                    if wave > 11 and wave < _G.Config[option].WaveToLose and #UnitID[5] == 3 then
+                        for i = 1, 6 do
+                            PlaceToLoc(UnitID[5][3], UnitPos(_G.Config[option].Map, "u5", i))
                         end
                     end
-                    if wave > 10 and wave < _G.Config[option].WaveToLose and #UnitID[6] == 3 then
-                        if not HasPlaced(UnitID[6][1]) and HasPlaced(UnitID[5][1]) then
-                            for i = 1, GetSpawnCap(UnitID[6][1]) do
-                                PlaceToLoc(UnitID[6][3], UnitPos(_G.Config[option].Map, "u6", i))
-                            end
+                    if wave > 15 and wave < _G.Config[option].WaveToLose and #UnitID[6] == 3 then
+                        for i = 1, 6 do
+                            PlaceToLoc(UnitID[6][3], UnitPos(_G.Config[option].Map, "u6", i))
                         end
                     end
                 else
