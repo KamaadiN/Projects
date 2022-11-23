@@ -65,6 +65,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
         function DS.Codes()
             return {
+                "CLOVER2",
                 "CLOVER",
                 "HALLOWEEN",
                 "CURSE2",
@@ -212,13 +213,15 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         HideName = false,
 
         SilentExec = false,
+        FastQuit = false,
+        WaveToQuit = 15,
         Keybind = "Enum.KeyCode.RightAlt",
 
         Collection = {
             Money = {},
             All = {}
         },
-        ConfigChanges = 2.111
+        ConfigChanges = 2.2
     }
 
     local hubname = "MAZTER HUB"
@@ -1720,6 +1723,24 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end,
             Enabled = _G.Config.SilentExec
         })
+        MiscPg.Toggle({
+            Text = "Fast Quit",
+            Callback = function(v)
+                _G.Config.FastQuit = v
+                SaveConfig()
+            end,
+            Enabled = _G.Config.FastQuit
+        })
+        MiscPg.Slider({
+            Text = "Wave To Fast Quit",
+            Callback = function(v)
+                _G.Config.WaveToQuit = v
+                SaveConfig()
+            end,
+            Min = 5,
+            Max = 100,
+            Def = _G.Config.WaveToQuit
+        })
         
         MiscPg.Toggle({
             Text = "Auto Summon",
@@ -2552,11 +2573,11 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     },
                     ["namek"] = {
                         u1 = UnitCFrames(CFrame.new(-2926, 94.4, -750.3), 3, "money"),
-                        u2 = UnitCFrames(CFrame.new(-2948.5, 91.8, -709.5), 6, "x", 0),
-                        u3 = UnitCFrames(CFrame.new(-2948.5, 91.8, -709.5), 6, "x", 1),
-                        u4 = UnitCFrames(CFrame.new(-2948.5, 91.8, -709.5), 6, "x", 2),
-                        u5 = UnitCFrames(CFrame.new(-2948.5, 91.8, -709.5), 6, "x", 3),
-                        u6 = UnitCFrames(CFrame.new(-2948.5, 91.8, -709.5), 6, "x", 4)
+                        u2 = UnitCFrames(CFrame.new(-2943, 91.8, -693), 6, "x", 0),
+                        u3 = UnitCFrames(CFrame.new(-2943, 91.8, -693), 6, "x", 1),
+                        u4 = UnitCFrames(CFrame.new(-2943, 91.8, -693), 6, "x", 2),
+                        u5 = UnitCFrames(CFrame.new(-2943, 91.8, -693), 6, "x", 3),
+                        u6 = UnitCFrames(CFrame.new(-2943, 91.8, -693), 6, "x", 4)
                     },
                     ["west_city_raid"] = {
                         u1 = UnitCFrames(CFrame.new(-2359, 40, -85), 3, "money"),
@@ -2915,13 +2936,22 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 if game:GetService("Workspace")["_DATA"].GameFinished.Value == true then
                     if _G.Config.Notify["Game Results"] or _G.Config.SaveStatistics then
                         if NotifySent or SavedStatistics then
-                            game:GetService('TeleportService'):Teleport(8304191830, game.Players.LocalPlayer)
-                            task.wait(3)
+                            game:GetService("ReplicatedStorage").endpoints["client_to_server"]["teleport_back_to_lobby"]:InvokeServer()
+                            task.wait(5)
                         end
                     elseif not _G.Config.SaveStatistics and not _G.Config.Notify["Game Results"] then
                         wait(2)
+                        game:GetService("ReplicatedStorage").endpoints["client_to_server"]["teleport_back_to_lobby"]:InvokeServer()
+                        task.wait(5)
+                    end
+                end
+            end
+            function FastQuit()
+                if _G.Config.FastQuit then
+                    local wave = game:GetService("Workspace"):WaitForChild("_wave_num").Value
+                    if wave >= _G.Config.WaveToQuit then
                         game:GetService('TeleportService'):Teleport(8304191830, game.Players.LocalPlayer)
-                        task.wait(3)
+                        task.wait(15)
                     end
                 end
             end
@@ -2940,6 +2970,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             AutoBuff()
                             Notify()
                             Teleport()
+                            FastQuit()
                         elseif _G.Config.Inf.Enabled and _G.Config.IsA == "Inf" or _G.Config.ThrillerBark.Enabled and _G.Config.IsA == "ThrillerBark" then
                             StartGame()
                             PlaceUnits(_G.Config.IsA)
@@ -2948,6 +2979,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             AutoSell(_G.Config.IsA)
                             Notify()
                             Teleport()
+                            FastQuit()
                         elseif _G.Config.InfCastle.Enabled and _G.Config.IsA == "InfCastle" then
                             CheckRoom()
                             CheckMap(_G.Config.IsA)
@@ -2957,6 +2989,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             AutoBuff()
                             Notify()
                             Teleport()
+                            FastQuit()
                         elseif _G.Config.Mission.Enabled and _G.Config.IsA == "Mission" then
                             StartGame()
                             CheckMap(_G.Config.IsA)
@@ -2966,6 +2999,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                             if string.match(_G.Config.Mission.Level, "infinite") then AutoSell("Mission") end
                             Notify()
                             Teleport()
+                            FastQuit()
                         end
                     end)
                 end
