@@ -65,6 +65,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
         function DS.Codes()
             return {
+                "KARAKORA",
                 "CLOVER2",
                 "CLOVER",
                 "HALLOWEEN",
@@ -174,6 +175,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         },
         LegendStage = {
             Enabled = false,
+            Map = "clover_legend",
             Level = "clover_legend_1"
         },
 
@@ -221,7 +223,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             Money = {},
             All = {}
         },
-        ConfigChanges = 2.2
+        ConfigChanges = 2.22222
     }
 
     local hubname = "MAZTER HUB"
@@ -307,7 +309,6 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         _G.Config.Raid.Lobby = ""
         _G.Config.Chg.Lobby = ""
         _G.Config.Summoning = true
-        _G.Config.LegendStage.Map = "clover"
         if InLobby() then
             _G.Config.IsA = ""
         end
@@ -532,11 +533,13 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                     table.insert(t, v["name"])
                 end
             end
-            table.sort(t, function(a, s)
-                local a1 = tonumber(string.match(a, "%d+"))
-                local b1 = tonumber(string.match(s, "%d+"))
-                return a1 < b1
-            end)
+            if string.match(t[1], "%d+") then
+                table.sort(t, function(a, s)
+                    local a1 = tonumber(string.match(a, "%d+"))
+                    local b1 = tonumber(string.match(s, "%d+"))
+                    return a1 < b1
+                end)
+            end
             return t
         elseif get == "id" then
             for k, v in pairs(levels) do
@@ -621,6 +624,39 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 return tonumber(leveldata["_infinite_tower_floor"])
             else
                 return _G.Config.InfCastle.Room
+            end
+        end
+    end
+    local function GetLegend(option)
+        local worlds = {
+            {bleach_legend = "Hollow Invasion"},
+            {clover_legend = "Clover Kingdom (Elf Invasion)"}
+        }
+        if option[1] == "all" then
+            local t = {}
+            for i, v in ipairs(worlds) do
+                for i2, v2 in pairs(v) do
+                    table.insert(t, v2)
+                end
+            end
+            return t
+        end
+        if option[1] == "id" then
+            for i, v in ipairs(worlds) do
+                for i2, v2 in pairs(v) do
+                    if v2 == option[2] then
+                        return i2
+                    end
+                end
+            end
+        end
+        if option[1] == "name" then
+            for i, v in ipairs(worlds) do
+                for i2, v2 in pairs(v) do
+                    if i2 == option[2] then
+                        return v2
+                    end
+                end
             end
         end
     end
@@ -1526,6 +1562,7 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
         })
 
     -- LEGEND STAGE
+
         OthersPg.Toggle({
             Text = "Auto Legend Stage",
             Callback = function(v)
@@ -1534,13 +1571,23 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
             end,
             Enabled = _G.Config.LegendStage.Enabled
         })
-        _G.LegendLevelsDD = OthersPg.Dropdown({
+        _G.LegendMapDD = OthersPg.Dropdown({
+            Text = "Select World",
+            Callback = function(op)
+                _G.Config.LegendStage.Map = GetLegend({"id", op})
+                _G.LegendLevelDD:SetOptions(GetLevel("all", GetLegend({"id", op})))
+                _G.Config.LegendStage.Level = GetLevel("id", GetLevel("all", _G.Config.LegendStage.Map)[1])
+                SaveConfig()
+            end,
+            Options = GetLegend({"all"})
+        })
+        _G.LegendLevelDD = OthersPg.Dropdown({
             Text = "Select Level",
             Callback = function(op)
                 _G.Config.LegendStage.Level = GetLevel("id", op)
                 SaveConfig()
             end,
-            Options = GetLevel("all", "clover_legend")
+            Options = GetLevel("all", _G.Config.LegendStage.Map)
         })
 
     -- WEBHOOK
@@ -2491,6 +2538,22 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                         u5 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 3),
                         u6 = UnitCFrames(CFrame.new(-184, 109.4, -613), 6, "x", 4)
                     },
+                    ["bleach_legend"] = {
+                        u1 = UnitCFrames(CFrame.new(-200.9, 110, 522.9), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-200.9, 36, 522.9), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-200.9, 36, 522.9), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-200.9, 36, 522.9), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-200.9, 36, 522.9), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-200.9, 36, 522.9), 6, "z", 4)
+                    },
+                    ["clover_legend"] = {
+                        u1 = UnitCFrames(CFrame.new(-176.3, 44, -8.3), 3, "money"),
+                        u2 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 0),
+                        u3 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 1),
+                        u4 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 2),
+                        u5 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 3),
+                        u6 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 4)
+                    },
                     ["clover"] = {
                         u1 = UnitCFrames(CFrame.new(-176.3, 44, -8.3), 3, "money"),
                         u2 = UnitCFrames(CFrame.new(-140.3, 1.24, -44.6), 6, "z", 0),
@@ -3103,7 +3166,8 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
                 MissionDescLabel.SetText("DESCRIPTION: ".. _G.Config.Mission.Desc)
                 MissionLevelLabel.SetText("LEVEL: ".. _G.Config.Mission.Level)
 
-                _G.LegendLevelsDD:SetText("Level Selected: ".. GetLevel("name", _G.Config.LegendStage.Level))
+                _G.LegendMapDD:SetText("Map Selected: ".. GetLegend({"name", _G.Config.LegendStage.Map}))
+                _G.LegendLevelDD:SetText("Level Selected: ".. GetLevel("name", _G.Config.LegendStage.Level))
             end
 
             do -- STATS
@@ -3145,7 +3209,6 @@ if loadstring(game:HttpGet("https://raw.githubusercontent.com/KamaadiN/DataStore
 
             end
 
-            
         end)
         game:GetService("UserInputService").InputBegan:connect(function(input, processed)
             if input.UserInputType == Enum.UserInputType.Keyboard and _G.SelectingHubKey then
